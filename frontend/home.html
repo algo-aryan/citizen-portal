@@ -19,6 +19,9 @@
             padding: 0;
             font-family: 'Roboto', -apple-system, sans-serif;
             -webkit-tap-highlight-color: transparent;
+            /* Disable selection for native feel */
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         body, html {
@@ -27,6 +30,8 @@
             overflow: hidden;
             background: var(--bg-gray);
             color: var(--text-dark);
+            /* Prevent bounce scrolling */
+            overscroll-behavior: none;
         }
 
         .app-container {
@@ -35,11 +40,12 @@
             flex-direction: column;
         }
 
-        /* --- Header --- */
+        /* --- Header with Safe Area (Notch) Support --- */
         .gov-header {
             background: #fff;
             border-bottom: 3px solid var(--gov-orange);
-            padding: 10px 15px;
+            /* Padding top handles the hidden status bar area */
+            padding: calc(10px + env(safe-area-inset-top)) 15px 10px 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -64,7 +70,8 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
-            padding-bottom: 90px; /* Space for bottom nav */
+            /* Extra padding to clear bottom navigation */
+            padding-bottom: calc(90px + env(safe-area-inset-bottom));
         }
 
         /* User Profile Strip */
@@ -120,13 +127,15 @@
             position: fixed;
             bottom: 0;
             width: 100%;
-            height: 70px;
+            /* env handles the bottom handle/gesture bar on new phones */
+            height: calc(70px + env(safe-area-inset-bottom));
             background: #fff;
             border-top: 2px solid #000;
             display: flex;
             justify-content: space-around;
-            align-items: center;
-            padding-bottom: env(safe-area-inset-bottom);
+            align-items: flex-start;
+            padding-top: 10px;
+            z-index: 100;
         }
 
         .nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; color: #888; text-decoration: none; }
@@ -201,8 +210,6 @@
                 </div>
             </div>
 
-            [Image of a professional citizen service portal dashboard for mobile apps]
-
         </main>
 
         <nav class="bottom-nav">
@@ -223,18 +230,16 @@
 
     <script>
         function navigateTo(url) {
-            // Simulated native feedback
             if (window.navigator.vibrate) {
                 window.navigator.vibrate(40);
             }
             
-            // App transition feel: short delay before loading
             setTimeout(() => {
                 window.location.href = url;
             }, 100);
         }
 
-        // Prevent Pull-to-Refresh browser behavior to maintain "App Feel"
+        // Lock viewport to maintain "App Feel"
         document.body.addEventListener('touchmove', function(e) {
             if (e.target.closest('.main-view')) return;
             e.preventDefault();
