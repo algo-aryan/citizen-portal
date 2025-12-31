@@ -9,7 +9,6 @@
             --eci-blue: #003366;
             --alert-red: #b71c1c;
             --bg-gray: #f2f4f7;
-            /* Dynamics safe area top for notches and status bars */
             --safe-top: env(safe-area-inset-top);
             --nav-height: calc(65px + var(--safe-top));
         }
@@ -24,57 +23,33 @@
         body, html { 
             height: 100%; width: 100%; overflow: hidden; 
             background: #fff; 
-            /* Prevents browser pull-to-refresh bounce */
             overscroll-behavior: none;
             -webkit-user-select: none;
             user-select: none;
         }
 
-        /* Fixed Navigation with WhatsApp-style Back Arrow */
         .official-nav {
-            position: fixed; 
-            top: 0; 
-            width: 100%; 
-            height: var(--nav-height);
-            background: #fff; 
-            border-bottom: 3px solid var(--eci-blue);
-            z-index: 1000; 
-            display: flex; 
-            align-items: flex-end; /* Aligns content to bottom of nav height */
+            position: fixed; top: 0; width: 100%; height: var(--nav-height);
+            background: #fff; border-bottom: 3px solid var(--eci-blue);
+            z-index: 2000; display: flex; align-items: flex-end; 
             padding: 0 15px 12px 15px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
-        .nav-content {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            gap: 15px;
-        }
-
-        /* Minimal Left Back Arrow */
-        .back-btn {
-            text-decoration: none;
-            color: var(--eci-blue);
-            font-size: 28px;
-            font-weight: 300;
-            display: flex;
-            align-items: center;
-            padding-right: 5px;
-        }
-        .back-btn:active { opacity: 0.5; }
+        .nav-content { display: flex; align-items: center; width: 100%; gap: 15px; }
+        .back-btn { text-decoration: none; color: var(--eci-blue); font-size: 28px; font-weight: 300; display: flex; align-items: center; }
 
         .nav-brand { display: flex; align-items: center; gap: 10px; }
         .emblem { height: 32px; }
         .nav-title h1 { font-size: 13px; color: var(--eci-blue); font-weight: 800; text-transform: uppercase; }
         .nav-title p { font-size: 9px; color: #d32f2f; font-weight: 700; }
 
-        /* Full Height Scoped Scroll Container */
         .viewport-snap {
             height: 100svh; 
             overflow-y: scroll; 
             scroll-snap-type: y mandatory;
             background: #fff;
+            -webkit-overflow-scrolling: touch;
         }
         .viewport-snap::-webkit-scrollbar { display: none; }
 
@@ -85,27 +60,24 @@
             display: flex; 
             flex-direction: column;
             background: #fff;
+            position: relative;
         }
 
-        /* Image Container (40% height) */
         .media-container {
-            height: 40%; 
-            background: #000; 
-            position: relative;
-            overflow: hidden; 
-            flex-shrink: 0;
+            height: 40%; background: #000; position: relative;
+            overflow: hidden; flex-shrink: 0;
             margin-top: var(--nav-height);
         }
         .main-img { width: 100%; height: 100%; object-fit: cover; }
         
-        /* Report Pane (fills remaining 60%) */
         .report-pane { 
             flex: 1; 
             padding: 20px 15px; 
             display: flex; 
             flex-direction: column; 
             background: #fff;
-            padding-bottom: calc(15px + env(safe-area-inset-bottom));
+            padding-bottom: calc(30px + env(safe-area-inset-bottom));
+            z-index: 10;
         }
         
         .stamp-verdict {
@@ -117,21 +89,63 @@
         .headline { font-size: 18px; font-weight: 800; color: #111; margin-bottom: 8px; line-height: 1.2; }
         .brief { font-size: 13px; color: #444; line-height: 1.5; margin-bottom: 15px; }
 
-        /* Evidence Table Pushed to Bottom */
-        .evidence-table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            font-size: 12px; 
-            margin-top: auto; 
-        }
+        .evidence-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 40px; }
         .evidence-table th { background: #f8f9fa; text-align: left; padding: 6px 8px; border: 1px solid #ddd; color: #666; text-transform: uppercase; font-size: 9px; }
         .evidence-table td { padding: 8px; border: 1px solid #ddd; font-weight: 600; vertical-align: top; }
         .key { width: 30%; color: #777; background: #fafafa; }
 
+        /* --- New Creative Scroll Hint Styling --- */
+        .scroll-hint {
+            position: absolute;
+            bottom: calc(30px + env(safe-area-inset-bottom));
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+            z-index: 100;
+            width: 60px; /* Container wider */
+        }
+
+        /* Styling the SVG arrows */
+        .arrow-icon {
+            width: 42px;   /* Explicitly wider width */
+            height: 18px;  /* Flattened height */
+            display: block;
+            color: #444;   /* Base dark grey color that applies to SVG stroke */
+            margin: -4px 0; /* Tighter stacking */
+            animation: bounceArrows 2.5s infinite;
+        }
+
+        /* Staggered animation delays */
+        .arrow-icon:nth-child(1) { animation-delay: 0s; }
+        .arrow-icon:nth-child(2) { animation-delay: 0.3s; }
+        .arrow-icon:nth-child(3) { animation-delay: 0.6s; }
+
+        /* The animation affects opacity, position, and stroke color */
+        @keyframes bounceArrows {
+            0%, 100% { 
+                transform: translateY(0); 
+                opacity: 0.2; 
+                color: #999; /* Lighter grey at start/end */
+            }
+            50% { 
+                transform: translateY(10px); 
+                opacity: 1; 
+                color: #333; /* Darker grey at peak */
+            }
+        }
+
+        .show-hint { opacity: 1 !important; }
+        /* ---------------------------------------- */
+
         .refresh-btn {
-            margin-top: 15px; height: 52px; background: var(--eci-blue); 
+            height: 52px; background: var(--eci-blue); 
             color: #fff; border: none; font-weight: 800; border-radius: 4px;
-            width: 100%; font-size: 14px;
+            width: 100%; font-size: 14px; margin-top: auto;
         }
     </style>
 </head>
@@ -140,9 +154,8 @@
     <nav class="official-nav">
         <div class="nav-content">
             <a href="home.html" class="back-btn">←</a>
-            
             <div class="nav-brand">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" class="emblem" alt="Emblem">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" class="emblem">
                 <div class="nav-title">
                     <h1>ECI FORENSIC UNIT</h1>
                     <p>ELECTION INTEGRITY 2025-26</p>
@@ -151,12 +164,10 @@
         </div>
     </nav>
 
-    <div class="viewport-snap">
+    <div class="viewport-snap" id="main-scroller">
         
         <section class="case-section">
-            <div class="media-container">
-                <img src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&q=80&w=1000" class="main-img">
-            </div>
+            <div class="media-container"><img src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&q=80&w=1000" class="main-img"></div>
             <div class="report-pane">
                 <div class="stamp-verdict">FAKE: DOCTORED NOTICE</div>
                 <h2 class="headline">Fake Schedule for 2026 State Polls</h2>
@@ -168,12 +179,21 @@
                     <tr><td class="key">VERIFIED</td><td>ECI confirms no such notification issued as of Dec 2025.</td></tr>
                 </table>
             </div>
+            <div class="scroll-hint">
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
         </section>
 
         <section class="case-section">
-            <div class="media-container">
-                <img src="https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?auto=format&fit=crop&q=80&w=1000" class="main-img">
-            </div>
+            <div class="media-container"><img src="https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?auto=format&fit=crop&q=80&w=1000" class="main-img"></div>
             <div class="report-pane">
                 <div class="stamp-verdict">AI DEEPFAKE DETECTED</div>
                 <h2 class="headline">Political Leader's "Cash for Votes" Video</h2>
@@ -185,16 +205,25 @@
                     <tr><td class="key">CONTEXT</td><td>Original video was a 2022 speech about education.</td></tr>
                 </table>
             </div>
+            <div class="scroll-hint">
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
         </section>
 
         <section class="case-section">
-            <div class="media-container">
-                <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=1000" class="main-img">
-            </div>
+            <div class="media-container"><img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=1000" class="main-img"></div>
             <div class="report-pane">
                 <div class="stamp-verdict">MISLEADING ARCHIVE</div>
                 <h2 class="headline">"EVM Malfunction" in Current Polls</h2>
-                <p class="brief">Video showing a crowd protesting against EVMs is being shared. The video is actually 4 years old and from a different state.</p>
+                <p class="brief">Video showing a crowd protesting against EVMs is being shared. The video is actually 4 years old.</p>
                 <table class="evidence-table">
                     <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
                     <tr><td class="key">TIMELINE</td><td>Reverse image search dates this footage to May 2021.</td></tr>
@@ -202,46 +231,73 @@
                     <tr><td class="key">OFFICIAL</td><td>Local police confirmed no such protest occurred this week.</td></tr>
                 </table>
             </div>
+            <div class="scroll-hint">
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
         </section>
 
         <section class="case-section">
-            <div class="media-container">
-                <img src="https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&q=80&w=1000" class="main-img">
-            </div>
+            <div class="media-container"><img src="https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&q=80&w=1000" class="main-img"></div>
             <div class="report-pane">
                 <div class="stamp-verdict">PHISHING FRAUD</div>
                 <h2 class="headline">Fake "ECI Volunteer" Recruitment</h2>
-                <p class="brief">A link is being shared asking students to register as volunteers for a stipend. This is a data-stealing scam.</p>
+                <p class="brief">A link is being shared asking students to register as volunteers. This is a data-stealing scam.</p>
                 <table class="evidence-table">
                     <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
                     <tr><td class="key">URL AUDIT</td><td>Domain is eci-volunteers.org. Official uses .gov.in.</td></tr>
                     <tr><td class="key">SECURITY</td><td>Site asks for Aadhaar and Bank OTP illegally.</td></tr>
-                    <tr><td class="key">SOURCE</td><td>IP located in a known cyber-crime hub outside India.</td></tr>
+                    <tr><td class="key">SOURCE</td><td>IP located outside India.</td></tr>
                 </table>
+            </div>
+            <div class="scroll-hint">
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
             </div>
         </section>
 
         <section class="case-section">
-            <div class="media-container">
-                <img src="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=1000" class="main-img">
-            </div>
+            <div class="media-container"><img src="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=1000" class="main-img"></div>
             <div class="report-pane">
                 <div class="stamp-verdict">AI AUDIO CLONE</div>
                 <h2 class="headline">Leaked Audio of Election Commissioner</h2>
-                <p class="brief">An audio clip claiming to be a secret phone call about "fixing" results is viral. This is an AI voice clone.</p>
+                <p class="brief">An audio clip claiming to be a secret phone call is viral. This is an AI voice clone.</p>
                 <table class="evidence-table">
                     <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
                     <tr><td class="key">SPECTROGRAM</td><td>Robotic flat-tones detected in high frequencies.</td></tr>
-                    <tr><td class="key">LANGUAGE</td><td>Voice uses phrases the official has never used.</td></tr>
+                    <tr><td class="key">LANGUAGE</td><td>Voice uses unnatural phrasing.</td></tr>
                     <tr><td class="key">TECH</td><td>Cloned using samples from a previous conference.</td></tr>
                 </table>
+            </div>
+            <div class="scroll-hint">
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
             </div>
         </section>
 
         <section class="case-section">
-            <div class="media-container">
-                <img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&q=80&w=1000" class="main-img">
-            </div>
+            <div class="media-container"><img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&q=80&w=1000" class="main-img"></div>
             <div class="report-pane">
                 <div class="stamp-verdict" style="border-color:#2e7d32; color:#2e7d32;">SECURE STATUS</div>
                 <h2 class="headline">Daily Integrity Report Complete</h2>
@@ -251,5 +307,42 @@
         </section>
     </div>
 
+    <script>
+        const scroller = document.getElementById('main-scroller');
+        const sections = document.querySelectorAll('.case-section');
+        let idleTimer;
+        let activeSection = sections[0];
+
+        function hideAllHints() {
+            document.querySelectorAll('.scroll-hint').forEach(h => h.classList.remove('show-hint'));
+        }
+
+        function restartInactivityTimer() {
+            clearTimeout(idleTimer);
+            hideAllHints();
+
+            if (activeSection && !activeSection.querySelector('.refresh-btn')) {
+                idleTimer = setTimeout(() => {
+                    const hint = activeSection.querySelector('.scroll-hint');
+                    if (hint) hint.classList.add('show-hint');
+                }, 10000); 
+            }
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    activeSection = entry.target;
+                    restartInactivityTimer();
+                }
+            });
+        }, { threshold: 0.6 });
+
+        sections.forEach(s => observer.observe(s));
+
+        scroller.addEventListener('scroll', restartInactivityTimer, {passive: true});
+        scroller.addEventListener('touchstart', hideAllHints, {passive: true});
+        window.addEventListener('load', restartInactivityTimer);
+    </script>
 </body>
 </html>
