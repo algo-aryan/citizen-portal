@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Bharat Verified News Feed</title>
+    <style>
+        :root {
+            --gov-blue: #003366;
+            --live-green: #2e7d32;
+            --bg-gray: #f2f4f7;
+            --nav-height: 65px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+        
+        body, html { 
+            height: 100svh; width: 100%; overflow: hidden; 
+            background: #000; 
+        }
+
+        /* Official Branding Header */
+        .official-nav {
+            position: fixed; top: 0; width: 100%; height: var(--nav-height);
+            background: #fff; border-bottom: 4px solid var(--gov-blue);
+            z-index: 1000; display: flex; align-items: center; padding: 0 15px;
+        }
+        .nav-brand { display: flex; align-items: center; gap: 12px; }
+        .emblem { height: 40px; }
+        .nav-title h1 { font-size: 15px; color: var(--gov-blue); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        .nav-title p { font-size: 11px; color: var(--live-green); font-weight: 700; display: flex; align-items: center; gap: 4px; }
+        .nav-title p::before { content: ""; width: 8px; height: 8px; background: var(--live-green); border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+
+        /* Full-Screen Scroll Container */
+        .viewport-snap {
+            height: calc(100svh - var(--nav-height)); 
+            margin-top: var(--nav-height);
+            overflow-y: scroll; scroll-snap-type: y mandatory;
+            background: var(--bg-gray);
+        }
+        .viewport-snap::-webkit-scrollbar { display: none; }
+
+        .case-section {
+            height: 100%; width: 100%;
+            scroll-snap-align: start; scroll-snap-stop: always;
+            display: flex; flex-direction: column;
+            overflow: hidden; border-bottom: 1px solid #ddd;
+        }
+
+        /* News Media */
+        .media-container {
+            height: 45%; background: #222; position: relative;
+            overflow: hidden; flex-shrink: 0;
+        }
+        .main-img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* News Content Pane */
+        .report-pane { flex: 1; padding: 20px; display: flex; flex-direction: column; background: #fff; position: relative; }
+        
+        .tag-row { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
+        .category-tag { background: #e8f5e9; color: #1b5e20; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; }
+        .source-tag { font-size: 11px; color: #666; font-weight: 600; }
+
+        .headline { font-size: 20px; font-weight: 900; color: #111; margin-bottom: 12px; line-height: 1.25; }
+        .news-body { font-size: 14.5px; color: #333; line-height: 1.6; flex-grow: 1; overflow-y: auto; }
+        .news-body b { color: #000; }
+
+        /* Action Buttons */
+        .action-bar { padding-top: 15px; border-top: 1px solid #eee; display: flex; gap: 10px; }
+        .btn-source { 
+            flex: 1; text-align: center; padding: 12px; background: var(--gov-blue); 
+            color: #fff; text-decoration: none; border-radius: 6px; font-weight: 700; font-size: 13px;
+        }
+        .btn-secondary { background: #f0f2f5; color: #444; }
+    </style>
+</head>
+<body>
+
+    <nav class="official-nav">
+        <div class="nav-brand">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" class="emblem" alt="Emblem">
+            <div class="nav-title">
+                <h1>Bharat News Network</h1>
+                <p>VERIFIED UPDATES • DEC 2025</p>
+            </div>
+        </div>
+    </nav>
+
+    <div class="viewport-snap">
+        
+        <section class="case-section">
+            <div class="media-container">
+                <img src="https://images.unsplash.com/photo-1599427404323-575023970b80?auto=format&fit=crop&q=80&w=1000" class="main-img" alt="Voter Ink">
+            </div>
+            <div class="report-pane">
+                <div class="tag-row"><span class="category-tag">Assembly Election</span><span class="source-tag">Source: ECI Newsroom</span></div>
+                <h2 class="headline">BJP Ends 26-Year Exile; Rekha Gupta Appointed Delhi CM</h2>
+                <div class="news-body">
+                    The Bharatiya Janata Party (BJP) has staged a historic comeback in Delhi, securing <b>48 out of 70 seats</b> in the Assembly polls. Rekha Gupta, the MLA from Shalimar Bagh, took the oath as Chief Minister on February 20, 2025. The Aam Aadmi Party (AAP) was reduced to 22 seats, while the Congress failed to open its account for the third consecutive time.
+                </div>
+                <div class="action-bar">
+                    <a href="https://www.thehindu.com/elections/delhi-assembly/delhi-election-result-2025-live-updates-bjp-aap-congress/article69193873.ece" target="_blank" class="btn-source">View Full Tally</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="case-section">
+            <div class="media-container">
+                <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=1000" class="main-img" alt="Rural Infrastructure">
+            </div>
+            <div class="report-pane">
+                <div class="tag-row"><span class="category-tag">Legislation</span><span class="source-tag">Source: PIB India</span></div>
+                <h2 class="headline">President Grants Assent to VB-G RAM G Bill; 125 Days Work Guaranteed</h2>
+                <div class="news-body">
+                    Replacing the 20-year-old MGNREGA, the <b>Viksit Bharat (VB-G RAM G) Act</b> of 2025 has officially been signed into law. The new framework increases the statutory wage employment guarantee from 100 to <b>125 days</b> per rural household. The Act also introduces a 60:40 funding split between the Centre and States.
+                </div>
+                <div class="action-bar">
+                    <a href="https://www.pib.gov.in/PressReleasePage.aspx?PRID=2207187" target="_blank" class="btn-source">Read Gazette Notice</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="case-section">
+            <div class="media-container">
+                <img src="https://images.unsplash.com/photo-1577412647305-991150c7d163?auto=format&fit=crop&q=80&w=1000" class="main-img" alt="Oath Ceremony">
+            </div>
+            <div class="report-pane">
+                <div class="tag-row"><span class="category-tag">Government Formation</span><span class="source-tag">Source: DD News</span></div>
+                <h2 class="headline">Nitish Kumar Sworn in for Record 10th Term in Bihar</h2>
+                <div class="news-body">
+                    Following the NDA's landslide victory in November 2025, Nitish Kumar has taken the oath of office for a historic <b>10th time</b> at Gandhi Maidan, Patna. The alliance secured 202 seats in the 243-member house. Prime Minister Modi attended the ceremony, noting Kumar's track record in effective governance.
+                </div>
+                <div class="action-bar">
+                    <a href="https://www.newsonair.gov.in/jdu-chief-nitish-kumar-to-take-oath-as-bihar-cm-for-the-10th-time/" target="_blank" class="btn-source">Watch Ceremony</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="case-section">
+            <div class="media-container">
+                <img src="https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?auto=format&fit=crop&q=80&w=1000" class="main-img" alt="Agriculture">
+            </div>
+            <div class="report-pane">
+                <div class="tag-row"><span class="category-tag">Welfare</span><span class="source-tag">Source: Agri Ministry</span></div>
+                <h2 class="headline">PM Dhan-Dhaanya Yojana to Cover 1.7 Crore Farmers</h2>
+                <div class="news-body">
+                    The Union Cabinet has approved the guidelines for <b>PMDDKY 2025</b>, merging 36 existing schemes into a single mission-mode plan. Targeting 100 underperforming districts, the scheme provides subsidies (50-80%) on smart tools and long-term credit to revolutionize rural productivity by 2030.
+                </div>
+                <div class="action-bar">
+                    <a href="https://agriwelfare.gov.in/Documents/Guidelines/Guidelines_PM_DDKY_19092025_Final[1]_0.pdf" target="_blank" class="btn-source">Check Guidelines</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="case-section">
+            <div class="media-container">
+                <img src="https://images.unsplash.com/photo-1531353826977-0941b4779a1c?auto=format&fit=crop&q=80&w=1000" class="main-img" alt="Public Rally">
+            </div>
+            <div class="report-pane">
+                <div class="tag-row"><span class="category-tag">Politics</span><span class="source-tag">Source: Economic Times</span></div>
+                <h2 class="headline">Amit Shah Launches '2026 Strategy' in West Bengal</h2>
+                <div class="news-body">
+                    Home Minister Amit Shah arrived in Kolkata on Dec 29, 2025, for a three-day intensive audit of BJP’s booth-level units. Addressing a core committee meeting, he projected a two-thirds majority in the 2026 Assembly polls, focusing on issues of infiltration and corruption.
+                </div>
+                <div class="action-bar">
+                    <a href="https://m.economictimes.com/news/politics-and-nation/amit-shah-targets-tmc-over-corruption-says-bjp-will-form-government-in-west-bengal-in-2026/articleshow/126246762.cms" target="_blank" class="btn-source">Strategy Details</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="case-section">
+            <div class="media-container">
+                <img src="https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&q=80&w=1000" class="main-img" alt="Official Documents">
+            </div>
+            <div class="report-pane">
+                <div class="tag-row"><span class="category-tag">Election Prep</span><span class="source-tag">Source: ECI</span></div>
+                <h2 class="headline">ECI Begins Special Intensive Revision (SIR) for 2026 Polls</h2>
+                <div class="news-body">
+                    The Election Commission has kicked off the <b>Special Intensive Revision</b> of electoral rolls on December 4, 2025. This process involves house-to-house verification to ensure zero-duplicate rolls for upcoming elections in TN, WB, and Kerala.
+                </div>
+                <div class="action-bar">
+                    <a href="https://voters.eci.gov.in" target="_blank" class="btn-source">Verify Your Name</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="case-section">
+            <div class="media-container">
+                <img src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&q=80&w=1000" class="main-img" alt="Modern Office">
+            </div>
+            <div class="report-pane">
+                <div class="tag-row"><span class="category-tag">Governance</span><span class="source-tag">Source: MyGov</span></div>
+                <h2 class="headline">Government Releases 'Reform Express 2025' Report</h2>
+                <div class="news-body">
+                    The Prime Minister’s Office shared a year-end report detailing governance milestones. Highlights include 100% saturation in digital benefit transfers and the removal of 2,000 obsolete laws to streamline the Ease of Living index for Indian citizens.
+                </div>
+                <div class="action-bar">
+                    <a href="https://www.pmindia.gov.in" target="_blank" class="btn-source">Full Report</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="case-section">
+            <div class="media-container">
+                <img src="https://images.unsplash.com/photo-1471193945509-9ad0617afabf?auto=format&fit=crop&q=80&w=1000" class="main-img" alt="Crop Field">
+            </div>
+            <div class="report-pane">
+                <div class="tag-row"><span class="category-tag">Economy</span><span class="source-tag">Source: Cabinet Secretariat</span></div>
+                <h2 class="headline">National Mission for Oilseeds Reaches Milestone</h2>
+                <div class="news-body">
+                    The <b>Atmanirbhar Oilseeds Mission</b> has reported a 15% increase in domestic mustard and palm oil production in late 2025. The government intends to eliminate import dependence by 2030 through direct incentives for farmers switching from water-guzzling crops.
+                </div>
+                <div class="action-bar">
+                    <a href="#" class="btn-source">Production Data</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="case-section">
+            <div class="media-container">
+                <img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&q=80&w=1000" class="main-img" alt="Legal Signing">
+            </div>
+            <div class="report-pane">
+                <div class="tag-row"><span class="category-tag">Finance Bill</span><span class="source-tag">Source: Lok Sabha</span></div>
+                <h2 class="headline">New Insurance Laws (Amendment) Bill Tabled</h2>
+                <div class="news-body">
+                    The winter session of Parliament saw the introduction of a new bill aimed at expanding insurance penetration. The amendment simplifies claim settlements using a <b>Unified Claim Interface</b> and allows composite licensing for insurance providers to lower premiums.
+                </div>
+                <div class="action-bar">
+                    <a href="#" class="btn-source">Bill Summary</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="case-section">
+            <div class="media-container">
+                <img src="https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&q=80&w=1000" class="main-img" alt="Economic Flow">
+            </div>
+            <div class="report-pane">
+                <div class="tag-row"><span class="category-tag">Alliance Strategy</span><span class="source-tag">Source: PIB Tamil Nadu</span></div>
+                <h2 class="headline">Shah Draws Roadmap for Tamil Nadu 2026 Polls</h2>
+                <div class="news-body">
+                    As part of his year-end outreach, Amit Shah highlighted that Tamil Nadu will be a priority state in 2026. Following the Bihar model, the BJP plans to strengthen grassroots presence through 'Panna Pramukhs' and local language digital outreach campaigns.
+                </div>
+                <div class="action-bar">
+                    <a href="https://www.youtube.com/watch?v=teDEnDCmtRo" target="_blank" class="btn-source">Watch Roadmap Pitch</a>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+</body>
+</html>

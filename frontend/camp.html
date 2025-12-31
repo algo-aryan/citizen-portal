@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Campaigns | Election Commission of India</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --eci-blue: #003366;
+            --govt-saffron: #ff9933;
+            --govt-green: #138808;
+            --bg-light: #f1f4f7;
+            --border-gray: #bdc3c7;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-light); color: #2c3e50; }
+
+        /* --- GOVT HEADER (High Density) --- */
+        header {
+            background: #fff;
+            border-top: 5px solid var(--govt-saffron);
+            border-bottom: 3px solid var(--eci-blue);
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header-content { display: flex; align-items: center; gap: 12px; width: 100%; }
+        .back-link { font-size: 24px; color: var(--eci-blue); cursor: pointer; text-decoration: none; padding-right: 10px; font-weight: bold; display: none;}
+        .emblem { height: 45px; }
+        .title-group h1 { font-size: 14px; color: var(--eci-blue); font-weight: 800; text-transform: uppercase; margin: 0; line-height: 1.1; }
+        .title-group p { font-size: 10px; color: var(--govt-green); font-weight: 700; margin-top: 2px; text-transform: uppercase; }
+
+        /* --- CONTENT WRAPPER --- */
+        .main-body { padding: 15px; max-width: 900px; margin: 0 auto; }
+
+        .page-indicator {
+            background: var(--eci-blue);
+            color: #fff;
+            padding: 8px 15px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* --- LIST STYLE (Govt Block Style) --- */
+        .party-list { display: flex; flex-direction: column; gap: 10px; }
+        .party-block {
+            background: #fff;
+            border: 1px solid var(--border-gray);
+            border-left: 5px solid var(--eci-blue);
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .party-block:hover { background-color: #f9f9f9; }
+        
+        .logo-frame {
+            width: 65px; height: 65px;
+            border: 1px solid #eee;
+            background: #fff;
+            display: flex; align-items: center; justify-content: center;
+            margin-right: 15px; flex-shrink: 0;
+        }
+        .logo-frame img { max-width: 90%; max-height: 90%; object-fit: contain; }
+
+        .party-details { flex-grow: 1; }
+        .party-details .label { font-size: 9px; color: #7f8c8d; font-weight: 700; text-transform: uppercase; }
+        .party-details .name { font-size: 16px; color: var(--eci-blue); font-weight: 800; display: block; margin-top: 2px; }
+        .party-details .leader { font-size: 13px; color: #34495e; font-weight: 500; }
+
+        /* --- DETAIL VIEW (Official Table Style) --- */
+        .detail-view { display: none; background: #fff; border: 1px solid var(--border-gray); }
+        .detail-header {
+            background: #f8f9fa;
+            border-bottom: 1px solid var(--border-gray);
+            padding: 20px;
+            text-align: center;
+        }
+        .detail-logo-large { height: 80px; margin-bottom: 10px; }
+        .detail-view h2 { color: var(--eci-blue); font-size: 20px; font-weight: 800; text-transform: uppercase; }
+        .slogan-text { color: var(--govt-saffron); font-size: 13px; font-weight: 700; margin-top: 5px; font-style: italic; }
+
+        .info-table { width: 100%; border-collapse: collapse; }
+        .info-table th { 
+            background: #f1f1f1; 
+            text-align: left; 
+            padding: 12px 15px; 
+            font-size: 12px; 
+            color: var(--eci-blue); 
+            border-bottom: 1px solid var(--border-gray);
+            text-transform: uppercase;
+        }
+        .info-table td { padding: 15px; font-size: 14px; border-bottom: 1px solid #eee; line-height: 1.6; }
+
+        /* THE "KEY POINTS" SECTION (Govt List Style) */
+        .promise-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+        .bullet { color: var(--govt-green); font-weight: bold; }
+
+        /* --- BOTTOM ACTION BAR --- */
+        .bottom-action {
+            position: fixed; bottom: 0; width: 100%;
+            background: #fff; border-top: 1px solid var(--border-gray);
+            padding: 12px 15px; display: none; justify-content: center;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        .btn-govt {
+            background: var(--govt-saffron);
+            color: #000;
+            border: 1px solid #000;
+            padding: 12px 20px;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            width: 100%;
+            max-width: 400px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .btn-govt:active { background: #e67e22; }
+
+        /* UTILITY */
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <div id="backBtn" class="back-link" onclick="hideDetails()">←</div>
+        <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" class="emblem" alt="Emblem">
+        <div class="title-group">
+            <h1>Election Commission of India</h1>
+            <p>National Campaign Repository • 2025</p>
+        </div>
+    </div>
+</header>
+
+<div class="main-body">
+    <div class="page-indicator" id="pgInd">List of Registered Political Parties</div>
+
+    <div id="listView" class="party-list">
+        </div>
+
+    <div id="detailView" class="detail-view">
+        <div class="detail-header">
+            <img id="dLogo" class="detail-logo-large" src="" alt="logo">
+            <h2 id="dName">Party Name</h2>
+            <div id="dSlogan" class="slogan-text">Slogan Here</div>
+        </div>
+        
+        <table class="info-table">
+            <tr><th>Official Campaign Agenda</th></tr>
+            <tr><td id="dAgenda">Agenda text here...</td></tr>
+            <tr><th>Key Manifesto Commitments</th></tr>
+            <tr><td id="dPromises">
+                </td></tr>
+        </table>
+    </div>
+</div>
+
+<div class="bottom-action" id="bottomBar">
+    <button class="btn-govt" onclick="alert('Downloading Official Gazette Document...')">
+        Download Official Manifesto (PDF)
+    </button>
+</div>
+
+<script>
+    const parties = [
+        {
+            id: 'aap',
+            name: 'AAM AADMI PARTY',
+            leader: 'Arvind Kejriwal',
+            logo: 'https://upload.wikimedia.org/wikipedia/commons/5/5e/Aam_Aadmi_Party_logo_%28English%29.svg',
+            slogan: "Kejriwal Ki Guarantee 2025",
+            agenda: "Implementation of the 'Delhi Model' focusing on universal access to primary healthcare, world-class education infrastructure, and subsidized basic utility services.",
+            promises: [
+                "₹2,100 Monthly Samman Rashi for all women.",
+                "24/7 Potable water supply with full historical waiver.",
+                "Development of 500 new Mohalla Clinics.",
+                "Free bus travel for students and senior citizens."
+            ]
+        },
+        {
+            id: 'bjp',
+            name: 'BHARATIYA JANATA PARTY',
+            leader: 'Manoj Tiwari',
+            logo: 'https://upload.wikimedia.org/wikipedia/commons/1/1e/Bharatiya_Janata_Party_logo.svg',
+            slogan: "Sankalp Patra: Viksit Delhi",
+            agenda: "Strategic infrastructure development via 'Double Engine' governance, focusing on urban redevelopment, pollution control, and tech-driven employment.",
+            promises: [
+                "Implementation of Ayushman Bharat (₹5 Lakh cover).",
+                "Pucca houses for all slum dwellers (Jahan Jhuggi Wahan Makan).",
+                "LPG Cylinder at ₹500 for eligible BPL families.",
+                "Creation of 10 Lakh employment opportunities."
+            ]
+        },
+        {
+            id: 'inc',
+            name: 'INDIAN NATIONAL CONGRESS',
+            leader: 'Mallikarjun Kharge',
+            logo: 'https://upload.wikimedia.org/wikipedia/commons/6/63/Indian_National_Congress_hand_logo.svg',
+            slogan: "Haath Badlega Halaat",
+            agenda: "Economic revitalization and social justice roadmap focusing on youth employment, agrarian support, and restoration of democratic values.",
+            promises: [
+                "300 Units free electricity for all domestic users.",
+                "₹8,500 Annual unemployment allowance for youth.",
+                "Legal guarantee for MSP based on Swaminathan Commission.",
+                "Filling 30 Lakh vacant Central Government posts."
+            ]
+        }
+    ];
+
+    const listDiv = document.getElementById('listView');
+    const detailDiv = document.getElementById('detailView');
+    const backBtn = document.getElementById('backBtn');
+    const pgInd = document.getElementById('pgInd');
+    const bottomBar = document.getElementById('bottomBar');
+
+    function loadList() {
+        listDiv.innerHTML = parties.map(p => `
+            <div class="party-block" onclick="showDetails('${p.id}')">
+                <div class="logo-frame">
+                    <img src="${p.logo}" alt="logo">
+                </div>
+                <div class="party-details">
+                    <span class="label">Election Symbol & Name</span>
+                    <span class="name">${p.name}</span>
+                    <span class="leader">Chief: ${p.leader}</span>
+                </div>
+                <div style="font-weight:bold; color:#bdc3c7;">▶</div>
+            </div>
+        `).join('');
+    }
+
+    function showDetails(id) {
+        const p = parties.find(x => x.id === id);
+        document.getElementById('dLogo').src = p.logo;
+        document.getElementById('dName').innerText = p.name;
+        document.getElementById('dSlogan').innerText = `"${p.slogan}"`;
+        document.getElementById('dAgenda').innerText = p.agenda;
+        
+        document.getElementById('dPromises').innerHTML = p.promises.map(pr => `
+            <div class="promise-row">
+                <span class="bullet">●</span>
+                <span>${pr}</span>
+            </div>
+        `).join('');
+
+        listDiv.style.display = 'none';
+        detailDiv.style.display = 'block';
+        backBtn.style.display = 'block';
+        bottomBar.style.display = 'flex';
+        pgInd.innerText = "Candidate Profile / Manifesto Details";
+        window.scrollTo(0,0);
+    }
+
+    function hideDetails() {
+        listDiv.style.display = 'flex';
+        detailDiv.style.display = 'none';
+        backBtn.style.display = 'none';
+        bottomBar.style.display = 'none';
+        pgInd.innerText = "List of Registered Political Parties";
+    }
+
+    loadList();
+</script>
+
+</body>
+</html>

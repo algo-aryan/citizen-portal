@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>AI Deepfake Analysis | Bharat News Network</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gov-blue: #003366;
+            --gov-blue-light: #0056b3;
+            --accent-orange: #ff9933;
+            --accent-green: #138808;
+            --live-green: #2e7d32;
+            --bg-gray: #f4f7f9;
+            --border-color: #d1d9e0;
+            --text-dark: #1a1a1a;
+            --text-muted: #586069;
+            --nav-height: 65px;
+            --alert-red: #d32f2f;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            font-family: 'Inter', -apple-system, sans-serif; 
+            background: var(--bg-gray); 
+            color: var(--text-dark);
+            line-height: 1.5;
+            padding-top: var(--nav-height);
+        }
+
+        /* --- Nav Bar Section (Shared with main app) --- */
+        .official-nav {
+            position: fixed; top: 0; width: 100%; height: var(--nav-height);
+            background: #fff; border-bottom: 4px solid var(--gov-blue);
+            z-index: 3000; display: flex; align-items: center; padding: 0 15px;
+        }
+        .nav-brand { display: flex; align-items: center; gap: 12px; }
+        .nav-emblem { height: 40px; }
+        .nav-title h1 { font-size: 15px; color: var(--gov-blue); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        .nav-title p { font-size: 11px; color: var(--live-green); font-weight: 700; display: flex; align-items: center; gap: 4px; }
+        .nav-title p::before { content: ""; width: 8px; height: 8px; background: var(--live-green); border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+
+        .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
+
+        .page-header {
+            margin-bottom: 25px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .page-header h2 { font-size: 24px; color: var(--gov-blue); }
+
+        /* --- Analysis Section --- */
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card { background: #fff; border: 1px solid var(--border-color); padding: 20px; }
+        
+        .upload-zone {
+            border: 2px dashed var(--gov-blue);
+            padding: 40px;
+            text-align: center;
+            background: #f8fbff;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        /* --- Heatmap Visualization --- */
+        .heatmap-container {
+            position: relative;
+            display: none; /* Hidden until upload */
+            width: 100%;
+            background: #000;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .heatmap-image { width: 100%; display: block; opacity: 0.8; }
+        
+        /* Thermal Saliency Map Overlays */
+        .saliency-point {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,0,0,0.8) 0%, rgba(255,153,51,0.4) 50%, transparent 70%);
+            box-shadow: 0 0 20px rgba(255,0,0,0.6);
+            animation: flicker 2s infinite;
+        }
+        @keyframes flicker { 0%, 100% { opacity: 0.8; transform: scale(1); } 50% { opacity: 1; transform: scale(1.1); } }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            font-weight: 700;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .badge-fake { background: #ffebee; color: var(--alert-red); border: 1px solid var(--alert-red); }
+
+        /* --- Community Ledger Table --- */
+        .ledger-section { margin-top: 40px; }
+        .ledger-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            font-size: 13px;
+        }
+        .ledger-table th {
+            background: var(--gov-blue);
+            color: white;
+            text-align: left;
+            padding: 12px;
+            text-transform: uppercase;
+        }
+        .ledger-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .proof-link { color: var(--gov-blue-light); font-weight: 600; text-decoration: none; }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: var(--text-muted); }
+        input, select, textarea {
+            width: 100%; padding: 8px; border: 1px solid var(--border-color); font-family: inherit;
+        }
+
+        .btn {
+            background: var(--gov-blue); color: white; border: none; padding: 10px 20px;
+            font-weight: 600; cursor: pointer; text-transform: uppercase; font-size: 12px;
+        }
+
+        @media (max-width: 850px) {
+            .analysis-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="official-nav">
+    <div class="nav-brand">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" class="nav-emblem" alt="Emblem">
+        <div class="nav-title">
+            <h1>Bharat News Network</h1>
+            <p>AI VERIFICATION PORTAL • 2025</p>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="page-header">
+        <h2>Deepfake Saliency Analysis</h2>
+        <p style="font-size: 13px; color: var(--text-muted);">Upload media to generate a thermal heat-map of AI manipulations.</p>
+    </div>
+
+    <div class="analysis-grid">
+        <div class="card">
+            <div id="upload-box" class="upload-zone" onclick="simulateAnalysis()">
+                <p><strong>Click to Upload Image or Video</strong></p>
+                <p style="font-size: 12px;">(Simulate analysis of viral media)</p>
+            </div>
+
+            <div id="result-view" class="heatmap-container">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=1000" class="heatmap-image" alt="Analyzed Face">
+                
+                <div class="saliency-point" style="top: 35%; left: 38%; width: 60px; height: 40px;"></div> <div class="saliency-point" style="top: 35%; left: 55%; width: 60px; height: 40px;"></div> <div class="saliency-point" style="top: 65%; left: 45%; width: 80px; height: 50px;"></div> </div>
+        </div>
+
+        <div class="card">
+            <h3 style="font-size: 16px; margin-bottom: 15px;">Analysis Report</h3>
+            <div id="detection-data">
+                <p style="color: var(--text-muted); font-style: italic;">Awaiting media upload...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="ledger-section">
+        <div class="page-header">
+            <h2>Community Ledger (Verified Truths)</h2>
+        </div>
+        
+        <div class="analysis-grid">
+            <div class="card">
+                <table class="ledger-table">
+                    <thead>
+                        <tr>
+                            <th>Reported Claim</th>
+                            <th>AI Result</th>
+                            <th>Proof Reference</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ledger-body">
+                        </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h3 style="font-size: 15px; margin-bottom: 15px;">Report a Lie</h3>
+                <div class="form-group">
+                    <label>LINK TO FAKE NEWS</label>
+                    <input type="text" placeholder="Social media or WhatsApp link">
+                </div>
+                <div class="form-group">
+                    <label>ATTACH REAL PROOF (LINK)</label>
+                    <input type="text" placeholder="Official Govt/News link">
+                </div>
+                <button class="btn" style="width:100%">Submit to Ledger</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function simulateAnalysis() {
+        document.getElementById('upload-box').style.display = 'none';
+        const resultView = document.getElementById('result-view');
+        resultView.style.display = 'block';
+
+        const dataPanel = document.getElementById('detection-data');
+        dataPanel.innerHTML = `
+            <div class="status-badge badge-fake">DEEPFAKE DETECTED (98.4%)</div>
+            <div style="font-size: 13px; color: var(--text-dark);">
+                <p><strong>Detected Anomalies:</strong></p>
+                <ul style="padding-left: 20px; margin-top: 10px;">
+                    <li style="color: var(--alert-red); font-weight: 600;">Pixel Warping (Orbital Region)</li>
+                    <li style="color: var(--alert-red); font-weight: 600;">Unnatural Blink Rate (0.2/min)</li>
+                    <li>Saliency Mismatch: Mouth/Jaw sync</li>
+                </ul>
+                <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
+                <p style="font-size: 11px; color: var(--text-muted);">
+                    Thermal Saliency Map highlights regions where temporal consistency fails.
+                </p>
+            </div>
+        `;
+    }
+
+    const ledgerData = [
+        { claim: "Viral video of CM promising free crypto", result: "Fake", proof: "Official ECI Channel", link: "https://eci.gov.in" },
+        { claim: "Audio clip regarding voting date change", result: "Fake", proof: "Press Trust of India", link: "#" },
+        { claim: "Image of ballot boxes in private car", result: "Fake", proof: "FactCheck India", link: "#" }
+    ];
+
+    const ledgerBody = document.getElementById('ledger-body');
+    ledgerData.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="font-weight:600;">${row.claim}</td>
+            <td><span style="color:red; font-weight:bold;">${row.result}</span></td>
+            <td><a href="${row.link}" class="proof-link">View Proof</a></td>
+            <td><span style="color:green">● Verified</span></td>
+        `;
+        ledgerBody.appendChild(tr);
+    });
+</script>
+
+</body>
+</html>
