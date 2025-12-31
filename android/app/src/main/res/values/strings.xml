@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">CitizenPortal</string>
+    <string name="title_activity_main">CitizenPortal</string>
+    <string name="package_name">com.citizenportal.app</string>
+    <string name="custom_url_scheme">com.citizenportal.app</string>
+</resources>

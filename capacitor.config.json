@@ -1,0 +1,9 @@
+{
+  "appId": "com.citizenportal.app",
+  "appName": "CitizenPortal",
+  "webDir": "frontend",
+  "server": {
+  "url": "https://citizen-portal-psi.vercel.app",
+  "cleartext": true
+}
+}
