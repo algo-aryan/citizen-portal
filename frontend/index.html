@@ -21,18 +21,15 @@
             padding: 0;
             font-family: 'Roboto', sans-serif;
             -webkit-tap-highlight-color: transparent;
-            /* Disable text selection for app feel */
             -webkit-user-select: none;
             user-select: none;
         }
 
-        /* Essential for hiding status bar traces in standalone mode */
         body, html {
             height: 100%;
             width: 100%;
             overflow: hidden;
             background: #ffffff;
-            /* Prevents browser "bounce" effect */
             overscroll-behavior: none;
         }
 
@@ -43,7 +40,6 @@
             background: var(--bg-gray);
         }
 
-        /* Header with Safe Area support for Notch phones */
         .gov-header {
             background: #ffffff;
             border-bottom: 3px solid var(--gov-orange);
@@ -64,12 +60,11 @@
         .cp-brand span { font-size: 11px; font-weight: 600; color: #444; }
         .cp-logo { width: 22px; height: 22px; background: #333; color: #fff; font-size: 8px; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
 
-        /* Centered Viewport */
         .auth-viewport {
             flex: 1;
             display: flex;
             justify-content: center;
-            align-items: center; /* Vertical Center */
+            align-items: center;
             padding: 20px;
             position: relative;
         }
@@ -107,7 +102,7 @@
             padding: 0 15px;
             font-size: 16px;
             background: #fafafa;
-            -webkit-user-select: text; /* Allow typing */
+            -webkit-user-select: text;
         }
 
         .dl-primary-btn {
@@ -128,10 +123,14 @@
         .dl-links { text-align: right; margin-top: 15px; }
         .dl-links a { font-size: 13px; color: var(--dl-blue); text-decoration: none; font-weight: 500; }
 
-        /* OTP Input Styling */
-        .otp-row { display: flex; gap: 10px; justify-content: center; margin-bottom: 30px; }
+        .otp-row { 
+            display: flex; 
+            gap: 8px; 
+            justify-content: center; 
+            margin-bottom: 30px; 
+        }
         .otp-box {
-            width: 45px;
+            width: 40px; 
             height: 55px;
             text-align: center;
             font-size: 22px;
@@ -144,7 +143,6 @@
         .resend { text-align: center; font-size: 13px; color: #666; margin-top: 20px; }
         #timer { font-weight: 700; color: #d32f2f; }
 
-        /* Consent Screen (Full Overlap) */
         .consent-screen {
             background: white;
             width: 100%;
@@ -214,7 +212,6 @@
         .btn-dl-deny { flex: 1; height: 50px; background: #fff; color: #f56c6c; border: 1px solid #f56c6c; font-weight: 700; border-radius: 4px; }
         .btn-dl-allow { flex: 2; height: 50px; background: var(--dl-blue); color: #fff; border: none; font-weight: 700; border-radius: 4px; }
 
-        /* Loader - Fixed Z-index and hidden state */
         .loader-overlay {
             position: fixed;
             inset: 0;
@@ -321,7 +318,7 @@
                     
                     <div class="doc-list-item">
                         <div class="doc-icon-wrap">
-                            <img src="https://www.digilocker.gov.in/assets/img/issued_doc.png" alt="Doc">
+                            <img src="voter.png" alt="Voter ID Card">
                         </div>
                         <div class="doc-content">
                             <span class="doc-label">Voter Identity Card (EPIC)</span>
@@ -361,7 +358,6 @@
             const msg = document.getElementById('loader-msg');
             let timerInterval;
 
-            // 1. OTP Auto-tabbing Logic
             const otpBoxes = document.querySelectorAll('.otp-box');
             otpBoxes.forEach((box, index) => {
                 box.addEventListener('input', (e) => {
@@ -376,7 +372,6 @@
                 });
             });
 
-            // 2. Navigation Simulation
             const toOtpBtn = document.getElementById('to-otp-btn');
             const toConsentBtn = document.getElementById('to-consent-btn');
             const allowBtn = document.getElementById('allow-btn');
