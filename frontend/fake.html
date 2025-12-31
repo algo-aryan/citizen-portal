@@ -9,78 +9,135 @@
             --eci-blue: #003366;
             --alert-red: #b71c1c;
             --bg-gray: #f2f4f7;
-            --nav-height: 65px;
+            /* Adaptive height for notches */
+            --nav-height: calc(65px + env(safe-area-inset-top));
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            /* Disable text selection for app feel */
+            -webkit-user-select: none;
+            user-select: none;
+        }
         
         body, html { 
             height: 100svh; width: 100%; overflow: hidden; 
-            background: #000; 
+            background: #fff; 
+            /* Prevents browser "bounce" effect */
+            overscroll-behavior: none;
         }
 
-        /* Fixed Navigation */
+        /* Fixed Navigation with Home Button */
         .official-nav {
             position: fixed; top: 0; width: 100%; height: var(--nav-height);
             background: #fff; border-bottom: 3px solid var(--eci-blue);
-            z-index: 1000; display: flex; align-items: center; padding: 0 15px;
+            z-index: 1000; display: flex; align-items: flex-end; padding: 0 15px 10px 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
+        
+        .nav-content {
+            display: flex; justify-content: space-between; align-items: center; width: 100%;
+        }
+
         .nav-brand { display: flex; align-items: center; gap: 12px; }
-        .emblem { height: 38px; }
-        .nav-title h1 { font-size: 14px; color: var(--eci-blue); font-weight: 800; text-transform: uppercase; }
-        .nav-title p { font-size: 10px; color: #d32f2f; font-weight: 700; }
+        .emblem { height: 32px; }
+        .nav-title h1 { font-size: 13px; color: var(--eci-blue); font-weight: 800; text-transform: uppercase; }
+        .nav-title p { font-size: 9px; color: #d32f2f; font-weight: 700; }
+
+        /* Minimal Back Button */
+        .back-home-btn {
+            background: #f0f2f5;
+            border: 1px solid #ddd;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--eci-blue);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .back-home-btn:active { background: #e2e4e7; }
 
         /* Scoped Scroll Container */
         .viewport-snap {
-            height: calc(100svh - var(--nav-height)); 
-            margin-top: var(--nav-height);
+            height: 100svh;
             overflow-y: scroll; scroll-snap-type: y mandatory;
-            background: var(--bg-gray);
+            background: #fff;
+            /* Ensure it hides behind the nav properly */
+            scroll-padding-top: var(--nav-height);
         }
         .viewport-snap::-webkit-scrollbar { display: none; }
 
         .case-section {
-            height: 100%; width: 100%;
+            height: 100svh; width: 100%;
             scroll-snap-align: start; scroll-snap-stop: always;
             display: flex; flex-direction: column;
-            overflow: hidden; border-bottom: 2px solid #ccc;
+            overflow: hidden;
+            background: #fff;
         }
 
         /* Forensic Media Container */
         .media-container {
             height: 40%; background: #000; position: relative;
             overflow: hidden; flex-shrink: 0;
+            /* Adjust for header overlap */
+            margin-top: var(--nav-height);
         }
         .main-img { width: 100%; height: 100%; object-fit: cover; }
         
-        /* Forensic Report UI */
-        .report-pane { flex: 1; padding: 15px; display: flex; flex-direction: column; background: #fff; }
+        /* Forensic Report UI - Filled to fill empty space */
+        .report-pane { 
+            flex: 1; 
+            padding: 20px 15px; 
+            display: flex; 
+            flex-direction: column; 
+            background: #fff;
+            /* Safe area bottom for gesture bars */
+            padding-bottom: calc(20px + env(safe-area-inset-bottom));
+        }
         
         .stamp-verdict {
-            width: fit-content; padding: 5px 12px; border: 3px solid var(--alert-red);
-            color: var(--alert-red); font-weight: 900; font-size: 12px;
-            text-transform: uppercase; transform: rotate(-2deg); margin-bottom: 12px;
+            width: fit-content; padding: 4px 10px; border: 2.5px solid var(--alert-red);
+            color: var(--alert-red); font-weight: 900; font-size: 11px;
+            text-transform: uppercase; transform: rotate(-1.5deg); margin-bottom: 12px;
         }
 
-        .headline { font-size: 19px; font-weight: 800; color: #111; margin-bottom: 8px; line-height: 1.2; }
-        .brief { font-size: 14px; color: #444; line-height: 1.4; margin-bottom: 15px; }
+        .headline { font-size: 18px; font-weight: 800; color: #111; margin-bottom: 8px; line-height: 1.2; }
+        .brief { font-size: 13px; color: #444; line-height: 1.5; margin-bottom: 15px; }
 
         /* Evidence Table */
-        .evidence-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        .evidence-table th { background: #f8f9fa; text-align: left; padding: 8px; border: 1px solid #ddd; color: #666; text-transform: uppercase; font-size: 10px; }
-        .evidence-table td { padding: 10px 8px; border: 1px solid #ddd; font-weight: 600; vertical-align: top; }
-        .key { width: 30%; color: #777; }
+        .evidence-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: auto; }
+        .evidence-table th { background: #f8f9fa; text-align: left; padding: 6px 8px; border: 1px solid #ddd; color: #666; text-transform: uppercase; font-size: 9px; }
+        .evidence-table td { padding: 8px; border: 1px solid #ddd; font-weight: 600; vertical-align: top; line-height: 1.3; }
+        .key { width: 30%; color: #777; background: #fafafa; }
+
+        /* Refresh Button Fixed at bottom */
+        .refresh-btn {
+            margin-top: 15px; height: 50px; background: var(--eci-blue); 
+            color: #fff; border: none; font-weight: 800; border-radius: 4px;
+            width: 100%; font-size: 14px;
+        }
     </style>
 </head>
 <body>
 
     <nav class="official-nav">
-        <div class="nav-brand">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" class="emblem" alt="Emblem">
-            <div class="nav-title">
-                <h1>ECI FORENSIC UNIT</h1>
-                <p>ELECTION INTEGRITY 2025-26</p>
+        <div class="nav-content">
+            <div class="nav-brand">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" class="emblem" alt="Emblem">
+                <div class="nav-title">
+                    <h1>ECI FORENSIC UNIT</h1>
+                    <p>ELECTION INTEGRITY 2025-26</p>
+                </div>
             </div>
+            <a href="home.html" class="back-home-btn">
+                <span>←</span> Home
+            </a>
         </div>
     </nav>
 
@@ -93,12 +150,12 @@
             <div class="report-pane">
                 <div class="stamp-verdict">FAKE: DOCTORED NOTICE</div>
                 <h2 class="headline">Fake Schedule for 2026 State Polls</h2>
-                <p class="brief">A viral PDF claims election dates for 5 states have been finalized for February 2026. This is a forged document intended to confuse candidates.</p>
+                <p class="brief">A viral PDF claims election dates for 5 states have been finalized. This is a forged document intended to confuse candidates.</p>
                 <table class="evidence-table">
                     <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
-                    <tr><td class="key">SIGNATURE</td><td>Cryptographic mismatch. The digital signature does not belong to any ECI official.</td></tr>
-                    <tr><td class="key">METADATA</td><td>File created on a mobile app (CamScanner) rather than official ECI servers.</td></tr>
-                    <tr><td class="key">VERIFIED</td><td>ECI confirms no such notification has been issued as of Dec 2025.</td></tr>
+                    <tr><td class="key">SIGNATURE</td><td>Cryptographic mismatch. Digital signature invalid.</td></tr>
+                    <tr><td class="key">METADATA</td><td>Created on a mobile app rather than official servers.</td></tr>
+                    <tr><td class="key">VERIFIED</td><td>ECI confirms no such notification issued as of Dec 2025.</td></tr>
                 </table>
             </div>
         </section>
@@ -110,63 +167,12 @@
             <div class="report-pane">
                 <div class="stamp-verdict">AI DEEPFAKE DETECTED</div>
                 <h2 class="headline">Political Leader's "Cash for Votes" Video</h2>
-                <p class="brief">A video circulating on WhatsApp shows a senior politician promising ₹5,000 to every voter who submits a selfie with their marked finger. This is a synthetic video.</p>
+                <p class="brief">A video circulating shows a politician promising ₹5,000 to every voter. This is a synthetic video using face-swap tech.</p>
                 <table class="evidence-table">
                     <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
-                    <tr><td class="key">AI SCAN</td><td>Lip-sync latency detected. Audio frequency does not match original speaker's vocal range.</td></tr>
-                    <tr><td class="key">ARTIFACTS</td><td>Pixels around the jawline blur during rapid movement, confirming AI face-swapping.</td></tr>
-                    <tr><td class="key">CONTEXT</td><td>Original video was a 2022 speech about education, with audio replaced by AI.</td></tr>
-                </table>
-            </div>
-        </section>
-
-        <section class="case-section">
-            <div class="media-container">
-                <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1000" class="main-img">
-            </div>
-            <div class="report-pane">
-                <div class="stamp-verdict">MISLEADING ARCHIVE</div>
-                <h2 class="headline">"EVM Malfunction" in Current Polls</h2>
-                <p class="brief">Video showing a crowd protesting against EVMs is being shared as current news. The video is actually 4 years old and from a different state.</p>
-                <table class="evidence-table">
-                    <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
-                    <tr><td class="key">TIMELINE</td><td>Reverse image search dates this footage to May 2021.</td></tr>
-                    <tr><td class="key">GEOLOCATION</td><td>Billboards in the background show local shops from a city not currently in an election cycle.</td></tr>
-                    <tr><td class="key">OFFICIAL</td><td>Local police confirmed no such protest occurred this week.</td></tr>
-                </table>
-            </div>
-        </section>
-
-        <section class="case-section">
-            <div class="media-container">
-                <img src="https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=1000" class="main-img">
-            </div>
-            <div class="report-pane">
-                <div class="stamp-verdict">PHISHING FRAUD</div>
-                <h2 class="headline">Fake "ECI Volunteer" Recruitment</h2>
-                <p class="brief">A link is being shared asking students to register as "Election Volunteers" for a stipend of ₹1,200/day. This is a data-stealing scam.</p>
-                <table class="evidence-table">
-                    <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
-                    <tr><td class="key">URL AUDIT</td><td>Domain is eci-volunteers.org. Official ECI websites always use .gov.in.</td></tr>
-                    <tr><td class="key">SECURITY</td><td>Site asks for Aadhaar and Bank OTP, which no official recruitment portal does.</td></tr>
-                    <tr><td class="key">SOURCE</td><td>The IP address of the server is located in a known cyber-crime hub outside India.</td></tr>
-                </table>
-            </div>
-        </section>
-
-        <section class="case-section">
-            <div class="media-container">
-                <img src="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=1000" class="main-img">
-            </div>
-            <div class="report-pane">
-                <div class="stamp-verdict">AI AUDIO CLONE</div>
-                <h2 class="headline">Leaked Audio of Election Commissioner</h2>
-                <p class="brief">An audio clip claiming to be a secret phone call about "fixing" results is viral. This is an AI voice clone using RVC technology.</p>
-                <table class="evidence-table">
-                    <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
-                    <tr><td class="key">SPECTROGRAM</td><td>Robotic flat-tones detected in high frequencies, typical of AI voice models.</td></tr>
-                    <tr><td class="key">LANGUAGE</td><td>Voice uses phrases and grammar the official has never used in public records.</td></tr>
-                    <tr><td class="key">TECH</td><td>Cloned using a 3-second sample from a previous press conference.</td></tr>
+                    <tr><td class="key">AI SCAN</td><td>Lip-sync latency detected. Audio frequency mismatch.</td></tr>
+                    <tr><td class="key">ARTIFACTS</td><td>Pixels around jawline blur confirming face-swapping.</td></tr>
+                    <tr><td class="key">CONTEXT</td><td>Original video was a 2022 speech about education.</td></tr>
                 </table>
             </div>
         </section>
@@ -179,7 +185,14 @@
                 <div class="stamp-verdict" style="border-color:#2e7d32; color:#2e7d32;">SECURE STATUS</div>
                 <h2 class="headline">Daily Integrity Report Complete</h2>
                 <p class="brief">You have reviewed all flagged political misinformation for today. ECI reminds citizens that sharing unverified news is a legal offense.</p>
-                <button onclick="location.reload()" style="margin-top:auto; height:50px; background:var(--eci-blue); color:#fff; border:none; font-weight:800; border-radius:4px;">REFRESH LIVE FEED</button>
+                
+                <table class="evidence-table">
+                    <tr><th>Audit Log</th><th>Summary</th></tr>
+                    <tr><td class="key">SESSIONS</td><td>12,402 Integrity Scans conducted today.</td></tr>
+                    <tr><td class="key">Uptime</td><td>Forensic Servers 100% Operational.</td></tr>
+                </table>
+
+                <button class="refresh-btn" onclick="location.reload()">REFRESH LIVE FEED</button>
             </div>
         </section>
     </div>
