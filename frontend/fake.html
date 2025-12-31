@@ -9,96 +9,103 @@
             --eci-blue: #003366;
             --alert-red: #b71c1c;
             --bg-gray: #f2f4f7;
-            /* Adaptive height for notches */
-            --nav-height: calc(65px + env(safe-area-inset-top));
+            /* Dynamics safe area top for notches and status bars */
+            --safe-top: env(safe-area-inset-top);
+            --nav-height: calc(65px + var(--safe-top));
         }
 
         * { 
             box-sizing: border-box; 
-            margin: 0; 
-            padding: 0; 
+            margin: 0; padding: 0; 
             font-family: 'Segoe UI', Roboto, sans-serif; 
-            /* Disable text selection for app feel */
-            -webkit-user-select: none;
-            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
         
         body, html { 
-            height: 100svh; width: 100%; overflow: hidden; 
+            height: 100%; width: 100%; overflow: hidden; 
             background: #fff; 
-            /* Prevents browser "bounce" effect */
+            /* Prevents browser pull-to-refresh bounce */
             overscroll-behavior: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
-        /* Fixed Navigation with Home Button */
+        /* Fixed Navigation with WhatsApp-style Back Arrow */
         .official-nav {
-            position: fixed; top: 0; width: 100%; height: var(--nav-height);
-            background: #fff; border-bottom: 3px solid var(--eci-blue);
-            z-index: 1000; display: flex; align-items: flex-end; padding: 0 15px 10px 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .nav-content {
-            display: flex; justify-content: space-between; align-items: center; width: 100%;
+            position: fixed; 
+            top: 0; 
+            width: 100%; 
+            height: var(--nav-height);
+            background: #fff; 
+            border-bottom: 3px solid var(--eci-blue);
+            z-index: 1000; 
+            display: flex; 
+            align-items: flex-end; /* Aligns content to bottom of nav height */
+            padding: 0 15px 12px 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
-        .nav-brand { display: flex; align-items: center; gap: 12px; }
+        .nav-content {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            gap: 15px;
+        }
+
+        /* Minimal Left Back Arrow */
+        .back-btn {
+            text-decoration: none;
+            color: var(--eci-blue);
+            font-size: 28px;
+            font-weight: 300;
+            display: flex;
+            align-items: center;
+            padding-right: 5px;
+        }
+        .back-btn:active { opacity: 0.5; }
+
+        .nav-brand { display: flex; align-items: center; gap: 10px; }
         .emblem { height: 32px; }
         .nav-title h1 { font-size: 13px; color: var(--eci-blue); font-weight: 800; text-transform: uppercase; }
         .nav-title p { font-size: 9px; color: #d32f2f; font-weight: 700; }
 
-        /* Minimal Back Button */
-        .back-home-btn {
-            background: #f0f2f5;
-            border: 1px solid #ddd;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--eci-blue);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .back-home-btn:active { background: #e2e4e7; }
-
-        /* Scoped Scroll Container */
+        /* Full Height Scoped Scroll Container */
         .viewport-snap {
-            height: 100svh;
-            overflow-y: scroll; scroll-snap-type: y mandatory;
+            height: 100svh; 
+            overflow-y: scroll; 
+            scroll-snap-type: y mandatory;
             background: #fff;
-            /* Ensure it hides behind the nav properly */
-            scroll-padding-top: var(--nav-height);
         }
         .viewport-snap::-webkit-scrollbar { display: none; }
 
         .case-section {
             height: 100svh; width: 100%;
-            scroll-snap-align: start; scroll-snap-stop: always;
-            display: flex; flex-direction: column;
-            overflow: hidden;
+            scroll-snap-align: start; 
+            scroll-snap-stop: always;
+            display: flex; 
+            flex-direction: column;
             background: #fff;
         }
 
-        /* Forensic Media Container */
+        /* Image Container (40% height) */
         .media-container {
-            height: 40%; background: #000; position: relative;
-            overflow: hidden; flex-shrink: 0;
-            /* Adjust for header overlap */
+            height: 40%; 
+            background: #000; 
+            position: relative;
+            overflow: hidden; 
+            flex-shrink: 0;
             margin-top: var(--nav-height);
         }
         .main-img { width: 100%; height: 100%; object-fit: cover; }
         
-        /* Forensic Report UI - Filled to fill empty space */
+        /* Report Pane (fills remaining 60%) */
         .report-pane { 
             flex: 1; 
             padding: 20px 15px; 
             display: flex; 
             flex-direction: column; 
             background: #fff;
-            /* Safe area bottom for gesture bars */
-            padding-bottom: calc(20px + env(safe-area-inset-bottom));
+            padding-bottom: calc(15px + env(safe-area-inset-bottom));
         }
         
         .stamp-verdict {
@@ -110,15 +117,19 @@
         .headline { font-size: 18px; font-weight: 800; color: #111; margin-bottom: 8px; line-height: 1.2; }
         .brief { font-size: 13px; color: #444; line-height: 1.5; margin-bottom: 15px; }
 
-        /* Evidence Table */
-        .evidence-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: auto; }
+        /* Evidence Table Pushed to Bottom */
+        .evidence-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 12px; 
+            margin-top: auto; 
+        }
         .evidence-table th { background: #f8f9fa; text-align: left; padding: 6px 8px; border: 1px solid #ddd; color: #666; text-transform: uppercase; font-size: 9px; }
-        .evidence-table td { padding: 8px; border: 1px solid #ddd; font-weight: 600; vertical-align: top; line-height: 1.3; }
+        .evidence-table td { padding: 8px; border: 1px solid #ddd; font-weight: 600; vertical-align: top; }
         .key { width: 30%; color: #777; background: #fafafa; }
 
-        /* Refresh Button Fixed at bottom */
         .refresh-btn {
-            margin-top: 15px; height: 50px; background: var(--eci-blue); 
+            margin-top: 15px; height: 52px; background: var(--eci-blue); 
             color: #fff; border: none; font-weight: 800; border-radius: 4px;
             width: 100%; font-size: 14px;
         }
@@ -128,6 +139,8 @@
 
     <nav class="official-nav">
         <div class="nav-content">
+            <a href="home.html" class="back-btn">←</a>
+            
             <div class="nav-brand">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" class="emblem" alt="Emblem">
                 <div class="nav-title">
@@ -135,9 +148,6 @@
                     <p>ELECTION INTEGRITY 2025-26</p>
                 </div>
             </div>
-            <a href="home.html" class="back-home-btn">
-                <span>←</span> Home
-            </a>
         </div>
     </nav>
 
@@ -145,7 +155,7 @@
         
         <section class="case-section">
             <div class="media-container">
-                <img src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&q=80&w=1000" class="main-img" alt="Official Notice">
+                <img src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&q=80&w=1000" class="main-img">
             </div>
             <div class="report-pane">
                 <div class="stamp-verdict">FAKE: DOCTORED NOTICE</div>
@@ -162,7 +172,7 @@
 
         <section class="case-section">
             <div class="media-container">
-                <img src="https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?auto=format&fit=crop&w=1000" class="main-img">
+                <img src="https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?auto=format&fit=crop&q=80&w=1000" class="main-img">
             </div>
             <div class="report-pane">
                 <div class="stamp-verdict">AI DEEPFAKE DETECTED</div>
@@ -179,19 +189,63 @@
 
         <section class="case-section">
             <div class="media-container">
-                <img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1000" class="main-img">
+                <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=1000" class="main-img">
+            </div>
+            <div class="report-pane">
+                <div class="stamp-verdict">MISLEADING ARCHIVE</div>
+                <h2 class="headline">"EVM Malfunction" in Current Polls</h2>
+                <p class="brief">Video showing a crowd protesting against EVMs is being shared. The video is actually 4 years old and from a different state.</p>
+                <table class="evidence-table">
+                    <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
+                    <tr><td class="key">TIMELINE</td><td>Reverse image search dates this footage to May 2021.</td></tr>
+                    <tr><td class="key">GEOLOCATION</td><td>Billboards show local shops not in the current cycle.</td></tr>
+                    <tr><td class="key">OFFICIAL</td><td>Local police confirmed no such protest occurred this week.</td></tr>
+                </table>
+            </div>
+        </section>
+
+        <section class="case-section">
+            <div class="media-container">
+                <img src="https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&q=80&w=1000" class="main-img">
+            </div>
+            <div class="report-pane">
+                <div class="stamp-verdict">PHISHING FRAUD</div>
+                <h2 class="headline">Fake "ECI Volunteer" Recruitment</h2>
+                <p class="brief">A link is being shared asking students to register as volunteers for a stipend. This is a data-stealing scam.</p>
+                <table class="evidence-table">
+                    <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
+                    <tr><td class="key">URL AUDIT</td><td>Domain is eci-volunteers.org. Official uses .gov.in.</td></tr>
+                    <tr><td class="key">SECURITY</td><td>Site asks for Aadhaar and Bank OTP illegally.</td></tr>
+                    <tr><td class="key">SOURCE</td><td>IP located in a known cyber-crime hub outside India.</td></tr>
+                </table>
+            </div>
+        </section>
+
+        <section class="case-section">
+            <div class="media-container">
+                <img src="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=1000" class="main-img">
+            </div>
+            <div class="report-pane">
+                <div class="stamp-verdict">AI AUDIO CLONE</div>
+                <h2 class="headline">Leaked Audio of Election Commissioner</h2>
+                <p class="brief">An audio clip claiming to be a secret phone call about "fixing" results is viral. This is an AI voice clone.</p>
+                <table class="evidence-table">
+                    <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
+                    <tr><td class="key">SPECTROGRAM</td><td>Robotic flat-tones detected in high frequencies.</td></tr>
+                    <tr><td class="key">LANGUAGE</td><td>Voice uses phrases the official has never used.</td></tr>
+                    <tr><td class="key">TECH</td><td>Cloned using samples from a previous conference.</td></tr>
+                </table>
+            </div>
+        </section>
+
+        <section class="case-section">
+            <div class="media-container">
+                <img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&q=80&w=1000" class="main-img">
             </div>
             <div class="report-pane">
                 <div class="stamp-verdict" style="border-color:#2e7d32; color:#2e7d32;">SECURE STATUS</div>
                 <h2 class="headline">Daily Integrity Report Complete</h2>
-                <p class="brief">You have reviewed all flagged political misinformation for today. ECI reminds citizens that sharing unverified news is a legal offense.</p>
-                
-                <table class="evidence-table">
-                    <tr><th>Audit Log</th><th>Summary</th></tr>
-                    <tr><td class="key">SESSIONS</td><td>12,402 Integrity Scans conducted today.</td></tr>
-                    <tr><td class="key">Uptime</td><td>Forensic Servers 100% Operational.</td></tr>
-                </table>
-
+                <p class="brief">You have reviewed all flagged misinformation for today. Sharing unverified news is a legal offense.</p>
                 <button class="refresh-btn" onclick="location.reload()">REFRESH LIVE FEED</button>
             </div>
         </section>
