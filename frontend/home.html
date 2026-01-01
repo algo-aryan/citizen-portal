@@ -122,6 +122,101 @@
             align-items: center;
         }
 
+        /* --- Chatbot Widget Styles --- */
+#bnn-chat-wrapper {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    z-index: 5000;
+    font-family: 'Inter', sans-serif;
+}
+
+/* The Floating Button */
+#chat-trigger {
+    width: 60px;
+    height: 60px;
+    background: #002D58; /* Matches your Gov-Blue */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease;
+}
+
+#chat-trigger:hover { transform: scale(1.1); }
+
+/* The Chat Window */
+#chat-window {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 320px;
+    height: 450px;
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.1);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    display: none; /* Hidden by default */
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Chat Header */
+.chat-header {
+    background: #002D58;
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.chat-header h4 { font-size: 13px; font-weight: 700; text-transform: uppercase; margin: 0; }
+
+/* Chat Body */
+#chat-messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.msg {
+    max-width: 80%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.4;
+}
+.msg.bot { background: #e9ecef; color: #333; align-self: flex-start; border-bottom-left-radius: 2px; }
+.msg.user { background: #002D58; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+
+/* Chat Input */
+.chat-input-area {
+    padding: 12px;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 8px;
+}
+.chat-input-area input {
+    flex: 1;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px;
+    font-size: 13px;
+    outline: none;
+}
+
         /* --- Bottom Navigation --- */
         .bottom-nav {
             position: fixed;
@@ -245,5 +340,7 @@
             e.preventDefault();
         }, { passive: false });
     </script>
+    <script src="chatbot.js"></script>
+
 </body>
 </html>
