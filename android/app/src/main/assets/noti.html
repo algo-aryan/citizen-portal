@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Notifications | Election Commission of India</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gov-blue: #003366;
+            --gov-blue-light: #0056b3;
+            --live-green: #2e7d32;
+            --bg-gray: #f4f7f9;
+            --border-color: #d1d9e0;
+            --text-dark: #1a1a1a;
+            --text-muted: #586069;
+            --safe-top: env(safe-area-inset-top);
+            --nav-height: calc(65px + var(--safe-top));
+        }
+
+        * { 
+            box-sizing: border-box; 
+            margin: 0; padding: 0; 
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body { 
+            font-family: 'Inter', -apple-system, sans-serif; 
+            background: var(--bg-gray); 
+            color: var(--text-dark);
+            line-height: 1.5;
+            padding-top: var(--nav-height);
+            overscroll-behavior: none;
+        }
+
+        /* --- Immersive Official Nav --- */
+        .official-nav {
+            position: fixed; top: 0; width: 100%; height: var(--nav-height);
+            background: #fff; border-bottom: 4px solid var(--gov-blue);
+            z-index: 3000; 
+            display: flex; 
+            align-items: flex-end; 
+            padding: 0 15px 12px 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .nav-content {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            gap: 15px;
+        }
+
+        /* --- Chatbot Widget Styles --- */
+#bnn-chat-wrapper {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    z-index: 5000;
+    font-family: 'Inter', sans-serif;
+}
+
+/* The Floating Button */
+#chat-trigger {
+    width: 60px;
+    height: 60px;
+    background: #002D58; /* Matches your Gov-Blue */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease;
+}
+
+#chat-trigger:hover { transform: scale(1.1); }
+
+/* The Chat Window */
+#chat-window {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 320px;
+    height: 450px;
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.1);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    display: none; /* Hidden by default */
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Chat Header */
+.chat-header {
+    background: #002D58;
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.chat-header h4 { font-size: 13px; font-weight: 700; text-transform: uppercase; margin: 0; }
+
+/* Chat Body */
+#chat-messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.msg {
+    max-width: 80%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.4;
+}
+.msg.bot { background: #e9ecef; color: #333; align-self: flex-start; border-bottom-left-radius: 2px; }
+.msg.user { background: #002D58; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+
+/* Chat Input */
+.chat-input-area {
+    padding: 12px;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 8px;
+}
+.chat-input-area input {
+    flex: 1;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px;
+    font-size: 13px;
+    outline: none;
+}
+
+        /* Consistent Back Button */
+        .back-btn {
+            text-decoration: none;
+            color: var(--gov-blue);
+            font-size: 28px;
+            font-weight: 300;
+            display: flex;
+            align-items: center;
+            padding-right: 5px;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .back-btn:active { opacity: 0.5; }
+
+        .nav-brand { display: flex; align-items: center; gap: 10px; }
+        .nav-emblem { height: 32px; }
+        .nav-title h1 { font-size: 14px; color: var(--gov-blue); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        .nav-title p { font-size: 10px; color: var(--live-green); font-weight: 700; display: flex; align-items: center; gap: 4px; }
+        .nav-title p::before { content: ""; width: 7px; height: 7px; background: var(--live-green); border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+
+        /* --- Content Layout --- */
+        .container { 
+            max-width: 1100px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            padding-bottom: calc(20px + env(safe-area-inset-bottom));
+        }
+
+        .page-title-section {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+        .page-title-section h2 { font-size: 20px; color: #333; font-weight: 700; }
+
+        .notice-card { 
+            background: #fff; 
+            border: 1px solid var(--border-color); 
+            margin-bottom: 12px; 
+            display: flex;
+            flex-direction: column;
+            border-radius: 4px;
+        }
+
+        .card-main {
+            display: flex;
+            padding: 15px;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
+        .meta-box {
+            min-width: 80px;
+            text-align: center;
+            border-right: 1px solid #eee;
+            padding-right: 15px;
+        }
+        .date-day { display: block; font-size: 20px; font-weight: 700; color: var(--gov-blue); }
+        .date-month { display: block; font-size: 10px; text-transform: uppercase; color: var(--text-muted); }
+
+        .content-box { flex-grow: 1; }
+        .doc-category { 
+            font-size: 9px; 
+            background: #eef3f7; 
+            padding: 2px 6px; 
+            border-radius: 3px; 
+            color: var(--gov-blue);
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .doc-name { 
+            font-size: 15px; 
+            font-weight: 600; 
+            color: var(--gov-blue); 
+            text-decoration: none;
+            display: block;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .summary-box {
+            background: #fafbfc;
+            padding: 12px 15px;
+            border-top: 1px solid #f0f0f0;
+            font-size: 12.5px;
+            color: #555;
+        }
+        .summary-box ul { margin: 0; padding-left: 15px; }
+
+        .actions { display: flex; gap: 10px; margin-top: 10px; }
+        .btn {
+            flex: 1;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 4px;
+            border: 1px solid transparent;
+        }
+        .btn-primary { background: var(--gov-blue); color: #fff; }
+        .btn-outline { border-color: var(--gov-blue); color: var(--gov-blue); }
+        .btn:active { transform: scale(0.98); opacity: 0.8; }
+
+        @media (max-width: 480px) {
+            .meta-box { min-width: 60px; padding-right: 10px; }
+            .date-day { font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="official-nav">
+    <div class="nav-content">
+        <a href="home.html" class="back-btn">←</a>
+        
+        <div class="nav-brand">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" class="nav-emblem" alt="Emblem">
+            <div class="nav-title">
+                <h1>Bharat Mat</h1>
+                <p>VERIFIED UPDATES • DEC 2025</p>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="page-title-section">
+        <h2>Notifications</h2>
+    </div>
+
+    <div id="notice-container"></div>
+</div>
+
+<script>
+    const notices = [
+        { day: "11", month: "DEC", year: "2025", category: "ELECTORAL ROLL", name: "ECI Revises Schedule for Special Intensive Revision (SIR) in 6 States/UT", summary: ["Revised enumeration period for UP, Tamil Nadu, and Gujarat.", "Draft roll publication date updated to late December 2025.", "Focus on 01.01.2026 as the qualifying date for new voters."] },
+        { day: "08", month: "DEC", year: "2025", category: "POLITICAL PARTIES", name: "Adherence to Party Constitution & Internal Election Schedules", summary: ["Mandatory submission of internal democracy proof to maintain recognition.", "Strict compliance with organizational election timelines required.", "Reporting of constitutional amendments within 30 days."] },
+        { day: "02", month: "DEC", year: "2025", category: "EXPENDITURE", name: "Extension of due date for filing Contribution Report and Audited Accounts", summary: ["Extended timeline for parties to submit financial transparency documents.", "Mandatory for maintaining tax exemptions under the IT Act.", "Filing to be done through the online ECI portal."] },
+        { day: "24", month: "OCT", year: "2025", category: "MISINFORMATION", name: "Advisory on Responsible Use of AI and Deepfakes during Elections", summary: ["Guidelines for disclosing synthetically generated campaign content.", "Strict prohibition on deepfake impersonations of political rivals.", "Directives for social media platforms to remove non-compliant content."] },
+        { day: "16", month: "OCT", year: "2025", category: "POLITICAL PARTIES", name: "Notification regarding Registered Unrecognized Political Parties (RUPPs)", summary: ["Update on list of RUPPs and delisted inactive organizations.", "Criteria for maintenance of registered status during non-election years.", "Symbol allotment guidelines for newly registered entities."] },
+        { day: "09", month: "OCT", year: "2025", category: "VIGILANCE", name: "Observance of Vigilance Awareness Week 2025", summary: ["Focus on 'Culture of Integrity for Nation's Prosperity'.", "Integrity pledge for all electoral officers and field staff.", "Preventive vigilance measures for the upcoming state poll cycle."] },
+        { day: "06", month: "OCT", year: "2025", category: "DISQUALIFICATION", name: "Updated List of Disqualified Persons under Section 10A of RP Act", summary: ["Current list of persons barred from contesting due to expenditure defaults.", "Detailed by State and Assembly Constituency.", "Instructions to ROs for scrutiny of nomination papers."] },
+        { day: "23", month: "SEP", year: "2025", category: "POLITICAL PARTIES", name: "Show Cause Notices to Registered Unrecognized Political Parties", summary: ["Notices issued for non-compliance with financial reporting norms.", "Possible delisting for parties failing to respond within stipulated time.", "Enforcement of Section 29C of the RPA 1951."] },
+        { day: "03", month: "SEP", year: "2025", category: "VIGILANCE", name: "Preventive Vigilance: 3-Month Campaign Prior to Awareness Week", summary: ["Intensive focus on internal audit of election material procurement.", "Verification of service records and transparency in vendor selection.", "Capacity building for District Election Officers on ethical management."] },
+        { day: "25", month: "AUG", year: "2025", category: "ADMINISTRATION", name: "Order regarding Internal Complaints Committee on Sexual Harassment", summary: ["Reconstitution of committees at ECI Headquarters and State levels.", "Mandatory training for presiding officers on the POSH Act.", "Timeline for disposal of complaints within the electoral machinery."] },
+        { day: "05", month: "AUG", year: "2025", category: "TENDER", name: "NIT for Empanelment of Hotels for IIIDEM Training Services", summary: ["Tender for boarding and lodging services for international trainees.", "Focus on Aerocity and Dwarka hubs near IIIDEM Campus.", "Quality standards for hosting foreign election management delegates."] },
+        { day: "04", month: "JUL", year: "2025", category: "RECRUITMENT", name: "Walk-in Interview for Research Consultants at CEO Delhi", summary: ["Engagement of specialists for electoral data analysis and SVEEP strategy.", "Focus on voter behavior research for the 2026 poll cycle.", "Contractual terms for academic experts and social scientists."] },
+        { day: "10", month: "FEB", year: "2025", category: "RESULTS", name: "Delhi Assembly Elections 2025: Declaration of Result (Form 21C)", summary: ["Official gazette notification of the winning candidates for all 70 seats.", "Party-wise seat share and final result summary.", "Closure of the 2025 General Election cycle for NCT of Delhi."] },
+        { day: "09", month: "FEB", year: "2025", category: "RESULTS", name: "Publication of Notification under Section 73 of RPA 1951", summary: ["Constitution of the new Delhi Legislative Assembly.", "Official list of elected members as certified by the Commission.", "Notification to the Lieutenant Governor of Delhi."] },
+        { day: "05", month: "FEB", year: "2025", category: "ADMINISTRATION", name: "Appointment of Additional Assistant Returning Officers (AAROs)", summary: ["Deployment of additional staff for counting day management.", "Training schedule for handling EVM data and postal ballots.", "Role allocation for crowd control at counting centers."] },
+        { day: "02", month: "FEB", year: "2025", category: "SECURITY", name: "Prohibition on Sale of Liquor (Dry Days) - Delhi Elections 2025", summary: ["48-hour ban prior to the close of poll to ensure peaceful voting.", "Extension of ban to counting day in specified zones.", "Instructions for strict enforcement by the Excise Department."] },
+        { day: "25", month: "JAN", year: "2025", category: "MEDIA", name: "Exit Poll Restrictions for Delhi Assembly & State Bye-Elections", summary: ["Ban on publication of exit polls until the completion of the last phase.", "Guidelines for print and electronic media coverage on poll day.", "Punitive measures for premature dissemination of voter sentiment data."] },
+        { day: "16", month: "JAN", year: "2025", category: "ADMINISTRATION", name: "Grant of Paid Holiday to Employees on Polling Day (05-02-2025)", summary: ["Mandatory leave for private and public sector employees to vote.", "Applicability to daily wage workers and contractual staff.", "Legal recourse for employees denied voting time by employers."] },
+        { day: "15", month: "JAN", year: "2025", category: "MISINFORMATION", name: "Launch of 'Myth vs Facts' Digital Register to Combat Fake News", summary: ["Real-time digital database to debunk electoral rumors.", "Authorized by CEO Delhi for the 2025 legislative elections.", "Provides authenticated verification for viral social media claims."] },
+        { day: "14", month: "JAN", year: "2025", category: "EVM/VVPAT", name: "ECI Direction regarding Use of EVM/VVPAT & Identification", summary: ["Protocol for multi-stage verification of voting machines.", "List of 12 alternative identity documents for voters without EPIC.", "Secure handling and storage instructions for polled EVMs."] }
+    ];
+
+    const container = document.getElementById('notice-container');
+
+    notices.forEach(notice => {
+        const card = document.createElement('div');
+        card.className = 'notice-card';
+        card.innerHTML = `
+            <div class="card-main">
+                <div class="meta-box">
+                    <span class="date-day">${notice.day}</span>
+                    <span class="date-month">${notice.month} ${notice.year}</span>
+                </div>
+                <div class="content-box">
+                    <span class="doc-category">${notice.category}</span>
+                    <span class="doc-name">${notice.name}</span>
+                    <div class="actions">
+                        <a href="1.pdf" target="_blank" rel="noopener" class="btn btn-primary">VIEW</a>
+                        <a href="1.pdf" download="Notice_${notice.day}.pdf" target="_blank" class="btn btn-outline">DOWNLOAD</a>
+                    </div>
+                </div>
+            </div>
+            <div class="summary-box">
+                <ul>
+                    ${notice.summary.map(point => `<li>${point}</li>`).join('')}
+                </ul>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+</script>
+<script src="chatbot.js"></script>
+
+</body>
+</html>

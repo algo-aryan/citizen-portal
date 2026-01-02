@@ -225,6 +225,8 @@ body::before {
     background-color: #d1d1d6; /* Inactive Grey */
     border-radius: 50%;
     transition: all 0.3s ease;
+
+    animation: none !important;
 }
 
 .dot.active {

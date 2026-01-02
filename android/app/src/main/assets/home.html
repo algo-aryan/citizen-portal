@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Citizen Dashboard</title>
+    <link rel="stylesheet" href="css/home.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* EXISTING FIX */
+        .floating-dock a span {
+            text-decoration: none !important;
+        }
+
+        /* --- NEW CHATBOT POSITION FIX --- */
+        /* This overrides the style injected by chatbot.js */
+        #citizen-bot-wrapper {
+            bottom: 80px !important; /* Pushes button UP above the dock */
+        }
+
+        /* Optional: Adjust for mobile specific if needed */
+        @media (max-width: 600px) {
+            #citizen-bot-wrapper {
+                bottom: 100px !important;
+            }
+        }
+        .onoe-big { width: 75px !important; height: 75px !important; border-radius: 50% !important; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <header class="gov-header">
+            <div class="header-left">
+                <div class="brand-container">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="Emblem" class="emblem">
+                    <div class="header-text">
+                        <span class="dept-name">Bharat Mat</span>
+                        <span class="govt-name">Government of India</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <button id="menu-btn" class="hamburger-btn">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </button>
+            </div>
+        </header>
+
+        <main class="dashboard-content">
+            
+           <section class="carousel-wrapper">
+                <div class="carousel-track" id="carousel-track">
+                    
+                    <div class="slide" onclick="window.location.href='onoe.html'">
+                        <div class="slide-content onoe-theme">
+                            <h3>One Nation, One Election</h3>
+                            <p>A unified vision for India's democracy. Explore here.</p>
+                        </div>
+                    </div>
+
+                    <div class="slide">
+                        <div class="slide-content ec-theme">
+                            <h3>General Election 2029</h3>
+                            <p>Official schedule and new polling guidelines released.</p>
+                        </div>
+                    </div>
+
+                    <div class="slide">
+                        <div class="slide-content check-theme">
+                            <h3>Fact Check Shield</h3>
+                            <p>Instantly verify news with our AI-powered truth detector.</p>
+                        </div>
+                    </div>
+
+                    <div class="slide">
+                        <div class="slide-content alert-theme">
+                            <h3>Deepfake Advisory</h3>
+                            <p>Stay vigilant against AI-generated audio & video scams.</p>
+                        </div>
+                    </div>
+
+                </div>
+                
+                <div class="carousel-dots" id="carousel-dots"></div>
+            </section>
+
+            <section class="profile-card">
+                <div class="profile-layout">
+                    <div class="p-image">
+                        <img src="data:image/jpeg;base64,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" alt="Profile">
+                        <div class="p-name">ARNAV BANSAL</div>
+                    </div>
+                    
+                    <div class="p-details">
+                        <div class="detail-row">
+                            <span class="label">Voter ID (EPIC)</span>
+                            <span class="val">XYZ1234567</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Polling Booth</span>
+                            <span class="val">Govt. Boys Sr. Sec. School, Sector 4, Delhi</span>
+                        </div>
+                        
+                        <a href="https://maps.google.com" target="_blank" class="view-map-btn">
+                             Click here to view on map
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <section class="trust-section">
+                <div class="section-title">
+                    <h4>Transparency Protocol</h4>
+                    <div class="line"></div>
+                </div>
+                <p class="trust-intro">We don't just label facts. We make the truth <b>traceable</b> and <b>tamper-proof</b>.</p>
+                
+                <div class="timeline-container">
+                    <div class="timeline-item">
+                        <div class="timeline-marker">1</div>
+                        <div class="timeline-content">
+                            <div class="tl-header">
+                                <h5>Hybrid Oracle</h5>
+                                <span class="tl-tag">AI + HUMAN</span>
+                            </div>
+                            <p>No single person decides. Verdicts require consensus from AI models AND high-reputation community validators.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-marker">2</div>
+                        <div class="timeline-content">
+                            <div class="tl-header">
+                                <h5>Proof Receipts</h5>
+                                <span class="tl-tag">EVIDENCE</span>
+                            </div>
+                            <p>Don't trust us—check the source. Every verdict links directly to original ECI circulars or raw unedited footage.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-marker">3</div>
+                        <div class="timeline-content">
+                            <div class="tl-header">
+                                <h5>Blockchain Accountability</h5>
+                                <span class="tl-tag">POLYGON</span>
+                            </div>
+                            <p>Verdicts are hashed on a public ledger. We cannot secretly change a "Fact" to "Fake" later for political reasons.</p>
+                            <a href="#" class="ledger-link">View Public Ledger ↗</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="faq-section">
+                <div class="section-title">
+                    <h4>Frequently Asked Questions</h4>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">How do I verify a news forward? <span>+</span></div>
+                    <div class="faq-answer">
+                        Navigate to the 'Check' tab in the bottom dock and simply paste the suspicious link or text. Our hybrid verification engine uses advanced AI models alongside human fact-checkers to analyze the content and provide you with an instant credibility verdict.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">Is my voting data public? <span>+</span></div>
+                    <div class="faq-answer">
+                        Absolutely not. Your voting choices are fully encrypted using military-grade security. We use Zero-Knowledge Proofs (ZK-Proof) to verify your eligibility on the blockchain without ever revealing your personal identity or voting history to the public.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">What is ONOE? <span>+</span></div>
+                    <div class="faq-answer">
+                        'One Nation, One Election' is a constitutional reform initiative aiming to synchronize Lok Sabha and State Assembly elections. The goal is to reduce the frequency of polls, significantly cut down election expenditure, and allow the government to focus on uninterrupted governance.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">How to update my address? <span>+</span></div>
+                    <div class="faq-answer">
+                        You can request an address change by submitting 'Form 8' directly through the 'Circulars' section of this app. Alternatively, the app provides a secure link to the National Voters' Service Portal (NVSP) where you can upload your proof of residence digitally.
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <script src="chatbot.js"></script>
+
+
+        <nav class="floating-dock">
+            <div class="dock-scroll">
+                <a href="index.html" class="dock-item active">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                    <span class="label">Home</span>
+                </a>
+                
+                <a href="fake.html" class="dock-item">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+                    <span class="label">FakeAlert</span>
+                </a>
+                
+                <a href="real.html" class="dock-item">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9c-.83 0-1.5-.67-1.5-1.5v-3c0-.83.67-1.5 1.5-1.5h1c.83 0 1.5.67 1.5 1.5v3zm6.5 4.5H14v-1.5h4v1.5zm0-3H14v-1.5h4v1.5zm0-3H14V6h4v1.5zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6z"/></svg>
+                    <span class="label">News</span>
+                </a>
+                
+                <a href="onoe.html" class="onoe-big">
+                    <svg class="icon-big" viewBox="0 0 24 24">
+                        <path d="M12 2L2 7v2h20V7L12 2zM6 20h2v-8H6v8zm5 0h2v-8h-2v8zm5 0h2v-8h-2v8zM4 22h16v-2H4v2z"/>
+                    </svg>
+                    <span class="label">ONOE</span>
+                </a>
+        
+                <a href="camp.html" class="dock-item">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M8 5v14l11-3V8L8 5zm11 4h3v6h-3V9zm-2 7l1.5 5h-5l1.5-5h2z"/>
+                        <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M5 9c-1.5 1.5-1.5 4.5 0 6 M 2 7c-2 2.5-2 7.5 0 10"/>
+                    </svg>
+                    <span class="label">Campaigns</span>
+                </a>
+                
+                <a href="lab.html" class="dock-item">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                    <span class="label">Check</span>
+                </a>
+                
+                <a href="noti.html" class="dock-item">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                    <span class="label">Circulars</span>
+                </a>
+            </div>
+        </nav>
+
+    <div id="side-drawer" class="side-drawer">
+        <div class="drawer-backdrop"></div>
+        <div class="drawer-panel">
+            
+            <div class="drawer-user-card">
+                <div class="user-photo-large">
+                    <img src="data:image/jpeg;base64,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" alt="Profile">
+                </div>
+                <div class="user-info-large">
+                    <h3>Arnav Bansal</h3>
+                    <p>+91 98765 43210</p>
+                    <span class="status-badge">Verified Citizen</span>
+                </div>
+            </div>
+
+            <nav class="drawer-nav">
+                <a href="#" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg> 
+                    My Profile
+                </a>
+                <a href="#" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg> 
+                    About Us
+                </a>
+                <a href="#" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M20 15.5c-1.25 0-2.45-.2-3.57-.57-.35-.11-.74-.03-1.02.24l-2.2 2.2a15.045 15.045 0 01-6.59-6.59l2.2-2.21c.28-.26.36-.65.25-1C8.7 6.45 8.5 5.25 8.5 4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.5c0-.55-.45-1-1-1zM19 12h2a9 9 0 00-9-9v2c3.87 0 7 3.13 7 7zm-4 0h2c0-2.76-2.24-5-5-5v2c1.66 0 3 1.34 3 3z"/></svg> 
+                    Contact / Helpline
+                </a>
+                <a href="#" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg> 
+                    Privacy Policy
+                </a>
+                <a href="#" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg> 
+                    Terms of Service
+                </a>
+            </nav>
+
+            <div class="drawer-bottom">
+                <button id="logout-btn" class="drawer-logout">
+                    <svg style="width:18px;" viewBox="0 0 24 24" fill="currentColor"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
+                    Log Out
+                </button>
+                <p class="version-text">Version 2.0.1 • Govt of India</p>
+            </div>
+
+        </div>
+    </div>
+
+    </div>
+
+    <script src="js/home.js"></script>
+</body>
+</html>

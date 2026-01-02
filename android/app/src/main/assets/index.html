@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>CitizenPortal | Secure Access</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --dl-blue: #0056b3;
+            --gov-dark: #333333;
+            --border-color: #d1d5db;
+            --bg-gray: #f2f5f9;
+            --gov-orange: #ff9933;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body, html {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background: #ffffff;
+            overscroll-behavior: none;
+        }
+
+        .app-container {
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-gray);
+        }
+
+        .gov-header {
+            background: #ffffff;
+            border-bottom: 3px solid var(--gov-orange);
+            padding: calc(10px + env(safe-area-inset-top)) 15px 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            z-index: 50;
+        }
+
+        .header-left { display: flex; align-items: center; gap: 10px; }
+        .emblem { height: 32px; }
+        .header-text { display: flex; flex-direction: column; }
+        .dept-name { font-size: 13px; font-weight: 700; color: var(--gov-dark); }
+        .govt-name { font-size: 10px; color: #666; text-transform: uppercase; }
+        .cp-brand { display: flex; align-items: center; gap: 6px; }
+        .cp-brand span { font-size: 11px; font-weight: 600; color: #444; }
+        .cp-logo { width: 22px; height: 22px; background: #333; color: #fff; font-size: 8px; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+
+        .auth-viewport {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .auth-card {
+            background: white;
+            width: 100%;
+            max-width: 400px;
+            padding: 35px 25px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dl-brand { text-align: center; margin-bottom: 30px; }
+        .dl-brand img { height: 35px; }
+
+        h2 { font-size: 20px; color: #222; margin-bottom: 10px; text-align: center; font-weight: 700; }
+        .instr { font-size: 14px; color: #555; text-align: center; margin-bottom: 30px; line-height: 1.4; }
+
+        .input-field { margin-bottom: 20px; }
+        .input-field input {
+            width: 100%;
+            height: 52px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 0 15px;
+            font-size: 16px;
+            background: #fafafa;
+            -webkit-user-select: text;
+        }
+
+        .dl-primary-btn {
+            width: 100%;
+            height: 54px;
+            background: var(--dl-blue);
+            color: white;
+            border: none;
+            font-weight: 700;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .dl-primary-btn:active { background: #004494; transform: scale(0.99); }
+
+        .dl-links { text-align: right; margin-top: 15px; }
+        .dl-links a { font-size: 13px; color: var(--dl-blue); text-decoration: none; font-weight: 500; }
+
+        .otp-row { 
+            display: flex; 
+            gap: 8px; 
+            justify-content: center; 
+            margin-bottom: 30px; 
+        }
+        .otp-box {
+            width: 40px; 
+            height: 55px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: 700;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #fdfdfd;
+        }
+
+        .resend { text-align: center; font-size: 13px; color: #666; margin-top: 20px; }
+        #timer { font-weight: 700; color: #d32f2f; }
+
+        .consent-screen {
+            background: white;
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            top: 0; left: 0;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            padding-top: env(safe-area-inset-top);
+        }
+
+        .dl-oauth-header {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .dl-logo-mini { height: 26px; }
+
+        .user-auth-strip {
+            background: #f8fbff;
+            padding: 20px 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px solid #eef2f8;
+        }
+        .user-initials {
+            width: 45px; height: 45px;
+            background: var(--dl-blue); color: white;
+            border-radius: 50%; display: flex;
+            align-items: center; justify-content: center;
+            font-weight: 700; font-size: 16px;
+        }
+        .u-name { display: block; font-weight: 700; font-size: 15px; color: #333; }
+        .u-meta { font-size: 11px; color: #28a745; font-weight: 600; }
+
+        .consent-main { padding: 25px 20px; flex: 1; overflow-y: auto; }
+        .request-intro { font-size: 14px; color: #444; margin-bottom: 25px; line-height: 1.5; }
+
+        .doc-list-item {
+            display: flex; gap: 15px; padding: 15px;
+            background: #fff; border: 1px solid #dcdfe6;
+            border-radius: 6px; margin-bottom: 25px;
+        }
+        .doc-icon-wrap img { width: 35px; }
+        .doc-label { display: block; font-weight: 700; font-size: 14px; color: #222; }
+        .doc-provider { font-size: 11px; color: #666; margin-top: 2px; }
+
+        .purpose-block { border-left: 3px solid var(--dl-blue); padding-left: 15px; margin-bottom: 25px; }
+        .purpose-label { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; }
+        .purpose-block p { font-size: 13px; color: #333; margin-top: 5px; }
+
+        .consent-checkbox-area {
+            display: flex; gap: 12px; background: #fff9f0;
+            padding: 15px; border: 1px solid #ffeeba; border-radius: 6px;
+        }
+        .consent-checkbox-area label { font-size: 12px; color: #856404; line-height: 1.4; }
+
+        .dl-actions-bar {
+            padding: 15px; display: flex; gap: 10px;
+            border-top: 1px solid #e0e0e0;
+            padding-bottom: calc(15px + env(safe-area-inset-bottom));
+        }
+        .btn-dl-deny { flex: 1; height: 50px; background: #fff; color: #f56c6c; border: 1px solid #f56c6c; font-weight: 700; border-radius: 4px; }
+        .btn-dl-allow { flex: 2; height: 50px; background: var(--dl-blue); color: #fff; border: none; font-weight: 700; border-radius: 4px; }
+
+        .loader-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .spinner {
+            width: 40px; height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--dl-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <header class="gov-header">
+            <div class="header-left">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="Emblem" class="emblem">
+                <div class="header-text">
+                    <span class="dept-name">Bharat Mat</span>
+                    <span class="govt-name">Government of India</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="auth-viewport">
+            <div id="step-1" class="auth-card">
+                <div class="dl-brand">
+                    <img src="https://www.digilocker.gov.in/assets/img/digilocker_logo.png" alt="DigiLocker">
+                </div>
+                <h2>Sign In to your account</h2>
+                <p class="instr">Enter your Aadhaar/Mobile number and 6-digit PIN</p>
+
+                <div class="input-field">
+                    <input type="number" id="identifier" placeholder="Aadhaar / Mobile Number" autocomplete="off">
+                </div>
+                <div class="input-field">
+                    <input type="password" id="pin" placeholder="6-digit Security PIN" maxlength="6">
+                </div>
+                
+                <button id="to-otp-btn" class="dl-primary-btn">Sign In</button>
+                <div class="dl-links">
+                    <a href="#">Forgot security PIN?</a>
+                </div>
+            </div>
+
+            <div id="step-2" class="auth-card hidden">
+                <div class="dl-brand">
+                    <img src="https://www.digilocker.gov.in/assets/img/digilocker_logo.png" alt="DigiLocker">
+                </div>
+                <h2>Verify OTP</h2>
+                <p class="instr">DigiLocker has sent an OTP to your registered mobile (******7890).</p>
+
+                <div class="otp-row">
+                    <input type="number" class="otp-box" maxlength="1">
+                    <input type="number" class="otp-box" maxlength="1">
+                    <input type="number" class="otp-box" maxlength="1">
+                    <input type="number" class="otp-box" maxlength="1">
+                    <input type="number" class="otp-box" maxlength="1">
+                    <input type="number" class="otp-box" maxlength="1">
+                </div>
+
+                <button id="to-consent-btn" class="dl-primary-btn">Submit OTP</button>
+                <p class="resend">Wait <span id="timer">00:59</span> to resend OTP</p>
+            </div>
+
+            <div id="step-3" class="consent-screen hidden">
+                <div class="dl-oauth-header">
+                    <img src="https://www.digilocker.gov.in/assets/img/digilocker_logo.png" alt="DigiLocker" class="dl-logo-mini">
+                    <div class="header-right-meta">
+                        <span class="portal-tag">CitizenPortal</span>
+                        <div class="cp-square">CP</div>
+                    </div>
+                </div>
+            
+                <div class="user-auth-strip">
+                    <div class="user-initials">JS</div>
+                    <div class="user-detail">
+                        <span class="u-name">JOHN SHARMA</span>
+                        <span class="u-meta">Verified via Aadhaar</span>
+                    </div>
+                </div>
+            
+                <div class="consent-main">
+                    <p class="request-intro"><b>CitizenPortal</b> is requesting access to your DigiLocker to fetch your <b>Issued Documents</b>.</p>
+                    
+                    <div class="doc-list-item">
+                        <div class="doc-icon-wrap">
+                            <img src="voter.png" alt="Voter ID Card">
+                        </div>
+                        <div class="doc-content">
+                            <span class="doc-label">Voter Identity Card (EPIC)</span>
+                            <span class="doc-provider">Election Commission of India (ECI)</span>
+                        </div>
+                    </div>
+            
+                    <div class="purpose-block">
+                        <span class="purpose-label">Purpose of Request:</span>
+                        <p>Identity verification for Voter Registration and Service Access via Zero-Knowledge protocol.</p>
+                    </div>
+            
+                    <div class="consent-checkbox-area">
+                        <input type="checkbox" id="consent-check" checked>
+                        <label for="consent-check">
+                            I provide my consent to share my document details with the requesting agency for verification.
+                        </label>
+                    </div>
+                </div>
+            
+                <div class="dl-actions-bar">
+                    <button id="deny-btn" class="btn-dl-deny">Deny</button>
+                    <button id="allow-btn" class="btn-dl-allow">Allow</button>
+                </div>
+            </div>
+
+            <div id="loader" class="loader-overlay hidden">
+                <div class="spinner"></div>
+                <p id="loader-msg">Verifying credentials...</p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loader = document.getElementById('loader');
+            const msg = document.getElementById('loader-msg');
+            let timerInterval;
+
+            const otpBoxes = document.querySelectorAll('.otp-box');
+            otpBoxes.forEach((box, index) => {
+                box.addEventListener('input', (e) => {
+                    if (e.target.value.length === 1 && index < otpBoxes.length - 1) {
+                        otpBoxes[index + 1].focus();
+                    }
+                });
+                box.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                        otpBoxes[index - 1].focus();
+                    }
+                });
+            });
+
+            const toOtpBtn = document.getElementById('to-otp-btn');
+            const toConsentBtn = document.getElementById('to-consent-btn');
+            const allowBtn = document.getElementById('allow-btn');
+            const denyBtn = document.getElementById('deny-btn');
+
+            toOtpBtn.addEventListener('click', () => {
+                const identifier = document.getElementById('identifier').value;
+                if (!identifier) {
+                    alert("Please enter Aadhaar or Mobile Number");
+                    return;
+                }
+                
+                loader.classList.remove('hidden');
+                msg.innerText = "Connecting to DigiLocker...";
+                
+                setTimeout(() => {
+                    loader.classList.add('hidden');
+                    document.getElementById('step-1').classList.add('hidden');
+                    document.getElementById('step-2').classList.remove('hidden');
+                    startTimer();
+                }, 2000);
+            });
+
+            toConsentBtn.addEventListener('click', () => {
+                loader.classList.remove('hidden');
+                msg.innerText = "Verifying OTP...";
+                setTimeout(() => {
+                    clearInterval(timerInterval);
+                    loader.classList.add('hidden');
+                    document.getElementById('step-2').classList.add('hidden');
+                    document.getElementById('step-3').classList.remove('hidden');
+                }, 1800);
+            });
+
+            allowBtn.addEventListener('click', () => {
+                const isChecked = document.getElementById('consent-check').checked;
+                if (!isChecked) {
+                    alert("Please provide your consent to continue.");
+                    return;
+                }
+
+                loader.classList.remove('hidden');
+                msg.innerText = "Establishing Secure Voter Token...";
+
+                setTimeout(() => {
+                    msg.innerText = "Generating Zero-Knowledge Proof...";
+                    setTimeout(() => {
+                        window.location.href = "home.html";
+                    }, 1500);
+                }, 1500);
+            });
+
+            denyBtn.addEventListener('click', () => {
+                if(confirm("Access is required for verification. Deny?")) {
+                    location.reload();
+                }
+            });
+
+            function startTimer() {
+                let timeLeft = 59;
+                const timerElem = document.getElementById('timer');
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    timerElem.innerText = `00:${timeLeft < 10 ? '0' + timeLeft : timeLeft}`;
+                    if (timeLeft <= 0) clearInterval(timerInterval);
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html>

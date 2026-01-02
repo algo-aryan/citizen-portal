@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Bharat Election Forensic Portal</title>
+    <style>
+        :root {
+            --eci-blue: #003366;
+            --alert-red: #b71c1c;
+            --bg-gray: #f2f4f7;
+            --safe-top: env(safe-area-inset-top);
+            --nav-height: calc(65px + var(--safe-top));
+        }
+
+        * { 
+            box-sizing: border-box; 
+            margin: 0; padding: 0; 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body, html { 
+            height: 100%; width: 100%; overflow: hidden; 
+            background: #fff; 
+            overscroll-behavior: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .official-nav {
+            position: fixed; top: 0; width: 100%; height: var(--nav-height);
+            background: #fff; border-bottom: 3px solid var(--eci-blue);
+            z-index: 2000; display: flex; align-items: flex-end; 
+            padding: 0 15px 12px 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .nav-content { display: flex; align-items: center; width: 100%; gap: 15px; }
+        .back-btn { text-decoration: none; color: var(--eci-blue); font-size: 28px; font-weight: 300; display: flex; align-items: center; }
+
+        .nav-brand { display: flex; align-items: center; gap: 10px; }
+        .emblem { height: 32px; }
+        .nav-title h1 { font-size: 13px; color: var(--eci-blue); font-weight: 800; text-transform: uppercase; }
+        .nav-title p { font-size: 9px; color: #d32f2f; font-weight: 700; }
+
+        .viewport-snap {
+            height: 100svh; 
+            overflow-y: scroll; 
+            scroll-snap-type: y mandatory;
+            background: #fff;
+            -webkit-overflow-scrolling: touch;
+        }
+        .viewport-snap::-webkit-scrollbar { display: none; }
+
+        .case-section {
+            height: 100svh; width: 100%;
+            scroll-snap-align: start; 
+            scroll-snap-stop: always;
+            display: flex; 
+            flex-direction: column;
+            background: #fff;
+            position: relative;
+        }
+
+        .media-container {
+            height: 40%; background: #000; position: relative;
+            overflow: hidden; flex-shrink: 0;
+            margin-top: var(--nav-height);
+        }
+        .main-img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .report-pane { 
+            flex: 1; 
+            padding: 20px 15px; 
+            display: flex; 
+            flex-direction: column; 
+            background: #fff;
+            padding-bottom: calc(30px + env(safe-area-inset-bottom));
+            z-index: 10;
+        }
+        
+        .stamp-verdict {
+            width: fit-content; padding: 4px 10px; border: 2.5px solid var(--alert-red);
+            color: var(--alert-red); font-weight: 900; font-size: 11px;
+            text-transform: uppercase; transform: rotate(-1.5deg); margin-bottom: 12px;
+        }
+
+        .headline { font-size: 18px; font-weight: 800; color: #111; margin-bottom: 8px; line-height: 1.2; }
+        .brief { font-size: 13px; color: #444; line-height: 1.5; margin-bottom: 15px; }
+
+        .evidence-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 40px; }
+        .evidence-table th { background: #f8f9fa; text-align: left; padding: 6px 8px; border: 1px solid #ddd; color: #666; text-transform: uppercase; font-size: 9px; }
+        .evidence-table td { padding: 8px; border: 1px solid #ddd; font-weight: 600; vertical-align: top; }
+        .key { width: 30%; color: #777; background: #fafafa; }
+
+        /* --- New Creative Scroll Hint Styling --- */
+        .scroll-hint {
+            position: absolute;
+            bottom: calc(30px + env(safe-area-inset-bottom));
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+            z-index: 100;
+            width: 60px; /* Container wider */
+        }
+
+        /* --- Chatbot Widget Styles --- */
+#bnn-chat-wrapper {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    z-index: 5000;
+    font-family: 'Inter', sans-serif;
+}
+
+/* The Floating Button */
+#chat-trigger {
+    width: 60px;
+    height: 60px;
+    background: #002D58; /* Matches your Gov-Blue */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease;
+}
+
+#chat-trigger:hover { transform: scale(1.1); }
+
+/* The Chat Window */
+#chat-window {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 320px;
+    height: 450px;
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.1);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    display: none; /* Hidden by default */
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Chat Header */
+.chat-header {
+    background: #002D58;
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.chat-header h4 { font-size: 13px; font-weight: 700; text-transform: uppercase; margin: 0; }
+
+/* Chat Body */
+#chat-messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.msg {
+    max-width: 80%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.4;
+}
+.msg.bot { background: #e9ecef; color: #333; align-self: flex-start; border-bottom-left-radius: 2px; }
+.msg.user { background: #002D58; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+
+/* Chat Input */
+.chat-input-area {
+    padding: 12px;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 8px;
+}
+.chat-input-area input {
+    flex: 1;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px;
+    font-size: 13px;
+    outline: none;
+}
+
+        /* Styling the SVG arrows */
+        .arrow-icon {
+            width: 42px;   /* Explicitly wider width */
+            height: 18px;  /* Flattened height */
+            display: block;
+            color: #444;   /* Base dark grey color that applies to SVG stroke */
+            margin: -4px 0; /* Tighter stacking */
+            animation: bounceArrows 2.5s infinite;
+        }
+
+        /* Staggered animation delays */
+        .arrow-icon:nth-child(1) { animation-delay: 0s; }
+        .arrow-icon:nth-child(2) { animation-delay: 0.3s; }
+        .arrow-icon:nth-child(3) { animation-delay: 0.6s; }
+
+        /* The animation affects opacity, position, and stroke color */
+        @keyframes bounceArrows {
+            0%, 100% { 
+                transform: translateY(0); 
+                opacity: 0.2; 
+                color: #999; /* Lighter grey at start/end */
+            }
+            50% { 
+                transform: translateY(10px); 
+                opacity: 1; 
+                color: #333; /* Darker grey at peak */
+            }
+        }
+
+        .show-hint { opacity: 1 !important; }
+        /* ---------------------------------------- */
+
+        .refresh-btn {
+            height: 52px; background: var(--eci-blue); 
+            color: #fff; border: none; font-weight: 800; border-radius: 4px;
+            width: 100%; font-size: 14px; margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="official-nav">
+        <div class="nav-content">
+            <a href="home.html" class="back-btn">←</a>
+            <div class="nav-brand">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" class="emblem">
+                <div class="nav-title">
+                    <h1>Bharat Mat</h1>
+                    <p>ELECTION INTEGRITY 2025-26</p>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="viewport-snap" id="main-scroller">
+        
+        <section class="case-section">
+            <div class="media-container"><img src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&q=80&w=1000" class="main-img"></div>
+            <div class="report-pane">
+                <div class="stamp-verdict">FAKE: DOCTORED NOTICE</div>
+                <h2 class="headline">Fake Schedule for 2026 State Polls</h2>
+                <p class="brief">A viral PDF claims election dates for 5 states have been finalized. This is a forged document intended to confuse candidates.</p>
+                <table class="evidence-table">
+                    <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
+                    <tr><td class="key">SIGNATURE</td><td>Cryptographic mismatch. Digital signature invalid.</td></tr>
+                    <tr><td class="key">METADATA</td><td>Created on a mobile app rather than official servers.</td></tr>
+                    <tr><td class="key">VERIFIED</td><td>ECI confirms no such notification issued as of Dec 2025.</td></tr>
+                </table>
+            </div>
+            <div class="scroll-hint">
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+        </section>
+
+        <section class="case-section">
+            <div class="media-container"><img src="https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?auto=format&fit=crop&q=80&w=1000" class="main-img"></div>
+            <div class="report-pane">
+                <div class="stamp-verdict">AI DEEPFAKE DETECTED</div>
+                <h2 class="headline">Political Leader's "Cash for Votes" Video</h2>
+                <p class="brief">A video circulating shows a politician promising ₹5,000 to every voter. This is a synthetic video using face-swap tech.</p>
+                <table class="evidence-table">
+                    <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
+                    <tr><td class="key">AI SCAN</td><td>Lip-sync latency detected. Audio frequency mismatch.</td></tr>
+                    <tr><td class="key">ARTIFACTS</td><td>Pixels around jawline blur confirming face-swapping.</td></tr>
+                    <tr><td class="key">CONTEXT</td><td>Original video was a 2022 speech about education.</td></tr>
+                </table>
+            </div>
+            <div class="scroll-hint">
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+        </section>
+
+        <section class="case-section">
+            <div class="media-container"><img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=1000" class="main-img"></div>
+            <div class="report-pane">
+                <div class="stamp-verdict">MISLEADING ARCHIVE</div>
+                <h2 class="headline">"EVM Malfunction" in Current Polls</h2>
+                <p class="brief">Video showing a crowd protesting against EVMs is being shared. The video is actually 4 years old.</p>
+                <table class="evidence-table">
+                    <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
+                    <tr><td class="key">TIMELINE</td><td>Reverse image search dates this footage to May 2021.</td></tr>
+                    <tr><td class="key">GEOLOCATION</td><td>Billboards show local shops not in the current cycle.</td></tr>
+                    <tr><td class="key">OFFICIAL</td><td>Local police confirmed no such protest occurred this week.</td></tr>
+                </table>
+            </div>
+            <div class="scroll-hint">
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+        </section>
+
+        <section class="case-section">
+            <div class="media-container"><img src="https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&q=80&w=1000" class="main-img"></div>
+            <div class="report-pane">
+                <div class="stamp-verdict">PHISHING FRAUD</div>
+                <h2 class="headline">Fake "ECI Volunteer" Recruitment</h2>
+                <p class="brief">A link is being shared asking students to register as volunteers. This is a data-stealing scam.</p>
+                <table class="evidence-table">
+                    <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
+                    <tr><td class="key">URL AUDIT</td><td>Domain is eci-volunteers.org. Official uses .gov.in.</td></tr>
+                    <tr><td class="key">SECURITY</td><td>Site asks for Aadhaar and Bank OTP illegally.</td></tr>
+                    <tr><td class="key">SOURCE</td><td>IP located outside India.</td></tr>
+                </table>
+            </div>
+            <div class="scroll-hint">
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+        </section>
+
+        <section class="case-section">
+            <div class="media-container"><img src="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=1000" class="main-img"></div>
+            <div class="report-pane">
+                <div class="stamp-verdict">AI AUDIO CLONE</div>
+                <h2 class="headline">Leaked Audio of Election Commissioner</h2>
+                <p class="brief">An audio clip claiming to be a secret phone call is viral. This is an AI voice clone.</p>
+                <table class="evidence-table">
+                    <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
+                    <tr><td class="key">SPECTROGRAM</td><td>Robotic flat-tones detected in high frequencies.</td></tr>
+                    <tr><td class="key">LANGUAGE</td><td>Voice uses unnatural phrasing.</td></tr>
+                    <tr><td class="key">TECH</td><td>Cloned using samples from a previous conference.</td></tr>
+                </table>
+            </div>
+            <div class="scroll-hint">
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+        </section>
+
+        <section class="case-section">
+            <div class="media-container"><img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&q=80&w=1000" class="main-img"></div>
+            <div class="report-pane">
+                <div class="stamp-verdict" style="border-color:#2e7d32; color:#2e7d32;">SECURE STATUS</div>
+                <h2 class="headline">Daily Integrity Report Complete</h2>
+                <p class="brief">You have reviewed all flagged misinformation for today. Sharing unverified news is a legal offense.</p>
+                <button class="refresh-btn" onclick="location.reload()">REFRESH LIVE FEED</button>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const scroller = document.getElementById('main-scroller');
+        const sections = document.querySelectorAll('.case-section');
+        let idleTimer;
+        let activeSection = sections[0];
+
+        function hideAllHints() {
+            document.querySelectorAll('.scroll-hint').forEach(h => h.classList.remove('show-hint'));
+        }
+
+        function restartInactivityTimer() {
+            clearTimeout(idleTimer);
+            hideAllHints();
+
+            if (activeSection && !activeSection.querySelector('.refresh-btn')) {
+                idleTimer = setTimeout(() => {
+                    const hint = activeSection.querySelector('.scroll-hint');
+                    if (hint) hint.classList.add('show-hint');
+                }, 10000); 
+            }
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    activeSection = entry.target;
+                    restartInactivityTimer();
+                }
+            });
+        }, { threshold: 0.6 });
+
+        sections.forEach(s => observer.observe(s));
+
+        scroller.addEventListener('scroll', restartInactivityTimer, {passive: true});
+        scroller.addEventListener('touchstart', hideAllHints, {passive: true});
+        window.addEventListener('load', restartInactivityTimer);
+    </script>
+    <script src="chatbot.js"></script>
+
+</body>
+</html>

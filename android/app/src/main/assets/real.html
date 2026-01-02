@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Bharat Verified News Feed</title>
+    <style>
+        :root {
+            --gov-blue: #003366;
+            --live-green: #2e7d32;
+            --bg-gray: #f2f4f7;
+            --safe-top: env(safe-area-inset-top);
+            --nav-height: calc(65px + var(--safe-top));
+        }
+
+        * { 
+            box-sizing: border-box; 
+            margin: 0; padding: 0; 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body, html { 
+            height: 100%; width: 100%; overflow: hidden; 
+            background: #fff; 
+            overscroll-behavior: none;
+        }
+
+        .official-nav {
+            position: fixed; top: 0; width: 100%; height: var(--nav-height);
+            background: #fff; border-bottom: 4px solid var(--gov-blue);
+            z-index: 1000; 
+            display: flex; 
+            align-items: flex-end; 
+            padding: 0 15px 10px 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .back-btn { 
+            text-decoration: none; 
+            color: var(--gov-blue); 
+            font-size: 28px; 
+            font-weight: 300; 
+            margin-right: 15px; 
+            display: flex; 
+            align-items: center; 
+            line-height: 1;
+            padding-bottom: 2px;
+        }
+
+        /* --- Chatbot Widget Styles --- */
+#bnn-chat-wrapper {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    z-index: 5000;
+    font-family: 'Inter', sans-serif;
+}
+
+/* The Floating Button */
+#chat-trigger {
+    width: 60px;
+    height: 60px;
+    background: #002D58; /* Matches your Gov-Blue */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease;
+}
+
+#chat-trigger:hover { transform: scale(1.1); }
+
+/* The Chat Window */
+#chat-window {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 320px;
+    height: 450px;
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.1);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    display: none; /* Hidden by default */
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Chat Header */
+.chat-header {
+    background: #002D58;
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.chat-header h4 { font-size: 13px; font-weight: 700; text-transform: uppercase; margin: 0; }
+
+/* Chat Body */
+#chat-messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.msg {
+    max-width: 80%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.4;
+}
+.msg.bot { background: #e9ecef; color: #333; align-self: flex-start; border-bottom-left-radius: 2px; }
+.msg.user { background: #002D58; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+
+/* Chat Input */
+.chat-input-area {
+    padding: 12px;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 8px;
+}
+.chat-input-area input {
+    flex: 1;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px;
+    font-size: 13px;
+    outline: none;
+}
+
+        .nav-brand { display: flex; align-items: center; gap: 12px; }
+        .emblem { height: 32px; }
+        .nav-title h1 { font-size: 14px; color: var(--gov-blue); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        .nav-title p { font-size: 10px; color: var(--live-green); font-weight: 700; display: flex; align-items: center; gap: 4px; }
+        .nav-title p::before { content: ""; width: 7px; height: 7px; background: var(--live-green); border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+
+        .viewport-snap {
+            height: 100dvh; 
+            overflow-y: scroll; scroll-snap-type: y mandatory;
+            background: var(--bg-gray);
+            scrollbar-width: none;
+        }
+        .viewport-snap::-webkit-scrollbar { display: none; }
+
+        .case-section {
+            height: 100dvh; width: 100%;
+            scroll-snap-align: start; scroll-snap-stop: always;
+            display: flex; flex-direction: column;
+            overflow: hidden; background: #fff;
+            position: relative;
+        }
+
+        .media-container {
+            height: 42%; background: #222; position: relative;
+            overflow: hidden; flex-shrink: 0;
+            margin-top: var(--nav-height);
+        }
+        .main-img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .report-pane { 
+            flex: 1; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            background: #fff; 
+            position: relative; 
+            padding-bottom: calc(20px + env(safe-area-inset-bottom));
+        }
+        
+        .tag-row { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
+        .category-tag { background: #e8f5e9; color: #1b5e20; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; }
+        .source-tag { font-size: 11px; color: #666; font-weight: 600; }
+
+        .headline { font-size: 19px; font-weight: 900; color: #111; margin-bottom: 10px; line-height: 1.25; }
+        .news-body { font-size: 14.5px; color: #333; line-height: 1.55; flex-grow: 1; overflow-y: auto; position: relative; }
+        .news-body b { color: #000; }
+
+        .action-bar { padding-top: 15px; border-top: 1px solid #eee; display: flex; gap: 10px; background: #fff; }
+        .btn-source { 
+            flex: 1; text-align: center; padding: 14px; background: var(--gov-blue); 
+            color: #fff; text-decoration: none; border-radius: 6px; font-weight: 700; font-size: 13px;
+        }
+        .btn-source:active { opacity: 0.8; transform: scale(0.98); }
+    </style>
+</head>
+<body>
+
+    <nav class="official-nav">
+        <a href="home.html" class="back-btn">←</a>
+        <div class="nav-brand">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" class="emblem" alt="Emblem">
+            <div class="nav-title">
+                <h1>Bharat Mat</h1>
+                <p>VERIFIED UPDATES • DEC 2025</p>
+            </div>
+        </div>
+    </nav>
+
+    <div class="viewport-snap" id="main-scroller">
+        
+        <section class="case-section">
+            <div class="media-container"><img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=1000" class="main-img"></div>
+            <div class="report-pane">
+                <div class="tag-row"><span class="category-tag">Legislation</span><span class="source-tag">Source: PIB India</span></div>
+                <h2 class="headline">President Grants Assent to VB-G RAM G Bill; 125 Days Work Guaranteed</h2>
+                <div class="news-body">
+                    Replacing the 20-year-old MGNREGA, the <b>Viksit Bharat (VB-G RAM G) Act</b> of 2025 has officially been signed into law. The new framework increases the statutory wage employment guarantee from 100 to <b>125 days</b> per rural household. The Act also introduces a 60:40 funding split between the Centre and States.
+                </div>
+                <div class="action-bar"><a href="#" class="btn-source">Read Gazette Notice</a></div>
+            </div>
+        </section>
+
+        <section class="case-section">
+            <div class="media-container"><img src="https://images.unsplash.com/photo-1577412647305-991150c7d163?auto=format&fit=crop&q=80&w=1000" class="main-img"></div>
+            <div class="report-pane">
+                <div class="tag-row"><span class="category-tag">Government Formation</span><span class="source-tag">Source: DD News</span></div>
+                <h2 class="headline">Nitish Kumar Sworn in for Record 10th Term in Bihar</h2>
+                <div class="news-body">
+                    Following the NDA's landslide victory in November 2025, Nitish Kumar has taken the oath of office for a historic <b>10th time</b> at Gandhi Maidan, Patna. The alliance secured 202 seats in the 243-member house.
+                </div>
+                <div class="action-bar"><a href="#" class="btn-source">Watch Ceremony</a></div>
+            </div>
+        </section>
+
+        <section class="case-section">
+            <div class="media-container"><img src="https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?auto=format&fit=crop&q=80&w=1000" class="main-img"></div>
+            <div class="report-pane">
+                <div class="tag-row"><span class="category-tag">Welfare</span><span class="source-tag">Source: Agri Ministry</span></div>
+                <h2 class="headline">PM Dhan-Dhaanya Yojana to Cover 1.7 Crore Farmers</h2>
+                <div class="news-body">
+                    The Union Cabinet has approved the guidelines for <b>PMDDKY 2025</b>. Targeting 100 underperforming districts, the scheme provides subsidies (50-80%) on smart tools and long-term credit.
+                </div>
+                <div class="action-bar"><a href="#" class="btn-source">Check Guidelines</a></div>
+            </div>
+        </section>
+
+        <section class="case-section">
+            <div class="media-container"><img src="https://images.unsplash.com/photo-1531353826977-0941b4779a1c?auto=format&fit=crop&q=80&w=1000" class="main-img"></div>
+            <div class="report-pane">
+                <div class="tag-row"><span class="category-tag">Politics</span><span class="source-tag">Source: Economic Times</span></div>
+                <h2 class="headline">Amit Shah Launches '2026 Strategy' in West Bengal</h2>
+                <div class="news-body">
+                    Home Minister Amit Shah arrived in Kolkata on Dec 29, 2025, for an audit of BJP’s units, projecting a two-thirds majority in the 2026 polls.
+                </div>
+                <div class="action-bar"><a href="#" class="btn-source">Strategy Details</a></div>
+            </div>
+        </section>
+
+        <section class="case-section">
+            <div class="media-container"><img src="https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&q=80&w=1000" class="main-img"></div>
+            <div class="report-pane">
+                <div class="tag-row"><span class="category-tag">Election Prep</span><span class="source-tag">Source: ECI</span></div>
+                <h2 class="headline">ECI Begins Special Intensive Revision (SIR) for 2026 Polls</h2>
+                <div class="news-body">
+                    The Election Commission has kicked off electoral roll revision on December 4, 2025, to ensure zero-duplicate rolls for upcoming polls in TN, WB, and Kerala.
+                </div>
+                <div class="action-bar"><a href="#" class="btn-source">Verify Your Name</a></div>
+            </div>
+        </section>
+
+        <section class="case-section">
+            <div class="media-container"><img src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&q=80&w=1000" class="main-img"></div>
+            <div class="report-pane">
+                <div class="tag-row"><span class="category-tag">Governance</span><span class="source-tag">Source: MyGov</span></div>
+                <h2 class="headline">Government Releases 'Reform Express 2025' Report</h2>
+                <div class="news-body">
+                    PMO shared a year-end report detailing milestones: 100% saturation in digital benefit transfers and removal of 2,000 obsolete laws.
+                </div>
+                <div class="action-bar"><a href="#" class="btn-source">Full Report</a></div>
+            </div>
+        </section>
+
+        <section class="case-section">
+            <div class="media-container"><img src="https://images.unsplash.com/photo-1471193945509-9ad0617afabf?auto=format&fit=crop&q=80&w=1000" class="main-img"></div>
+            <div class="report-pane">
+                <div class="tag-row"><span class="category-tag">Economy</span><span class="source-tag">Source: Cabinet Secretariat</span></div>
+                <h2 class="headline">National Mission for Oilseeds Reaches Milestone</h2>
+                <div class="news-body">
+                    A 15% increase in domestic mustard and palm oil production reported in late 2025. Goal is to eliminate import dependence by 2030.
+                </div>
+                <div class="action-bar"><a href="#" class="btn-source">Production Data</a></div>
+            </div>
+        </section>
+
+        <section class="case-section">
+            <div class="media-container"><img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&q=80&w=1000" class="main-img"></div>
+            <div class="report-pane">
+                <div class="tag-row"><span class="category-tag">Finance Bill</span><span class="source-tag">Source: Lok Sabha</span></div>
+                <h2 class="headline">New Insurance Laws (Amendment) Bill Tabled</h2>
+                <div class="news-body">
+                    The bill simplifies claim settlements using a <b>Unified Claim Interface</b> and allows composite licensing to lower premiums for Indian citizens.
+                </div>
+                <div class="action-bar"><a href="#" class="btn-source">Bill Summary</a></div>
+            </div>
+        </section>
+
+        <section class="case-section">
+            <div class="media-container"><img src="https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&q=80&w=1000" class="main-img"></div>
+            <div class="report-pane">
+                <div class="tag-row"><span class="category-tag">Alliance Strategy</span><span class="source-tag">Source: PIB Tamil Nadu</span></div>
+                <h2 class="headline">Shah Draws Roadmap for Tamil Nadu 2026 Polls</h2>
+                <div class="news-body">
+                    As part of outreach, Amit Shah highlighted that TN will be a priority. BJP plans to strengthen grassroots presence via 'Panna Pramukhs' and digital campaigns.
+                </div>
+                <div class="action-bar"><a href="#" class="btn-source">Watch Roadmap Pitch</a></div>
+            </div>
+        </section>
+
+    </div>
+    <script src="chatbot.js"></script>
+
+</body>
+</html>
