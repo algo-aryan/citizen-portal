@@ -458,22 +458,47 @@ body::before {
 
 /* ONOE Big Button (Pops out Top & Bottom) */
 .onoe-big {
-    width: 75px; 
-    height: 75px; 
+    /* 1. Force absolute circle dimensions */
+    width: 75px !important; 
+    height: 75px !important; 
+    min-width: 75px !important; 
+    max-width: 75px !important;
+    min-height: 75px !important;
+    max-height: 75px !important;
+
+    /* 2. Remove all internal browser spacing */
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    /* 3. Visual Styling */
+    background: linear-gradient(135deg, #FF9933 0%, #138808 100%) !important;
+    border-radius: 50% !important;
+    border: 5px solid #f5f7fa !important; 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important;
     
-    background: linear-gradient(135deg, #FF9933 0%, #138808 100%);
-    border-radius: 50%;
-    border: 5px solid #f5f7fa; /* Match background */
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    justify-content: center;
-    
-    position: relative;
-    z-index: 105;
-    flex-shrink: 0;
+    /* 4. Positioning */
+    position: relative !important;
+    top: -10px; /* Adjust this to make it "pop" out higher or lower */
+    z-index: 105 !important;
+    flex-shrink: 0 !important;
+    text-decoration: none !important;
+}
+
+/* Ensure the big icon doesn't stretch the circle */
+.icon-big {
+    width: 28px !important;
+    height: 28px !important;
+    flex-shrink: 0 !important;
+}
+
+.onoe-big:active {
+    transform: scale(0.9) translateY(-2px); /* Slight shrink and lift on touch */
+    transition: transform 0.1s ease;
 }
 
 .dock-item {
