@@ -10,8 +10,13 @@
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; -webkit-tap-highlight-color: transparent; -webkit-user-select: none;
     user-select: none;}
 
-body, html { height: 100%; width: 100%; overflow: hidden; background: var(--bg-gray); overscroll-behavior: none;}
-
+    body, html { 
+        height: 100%; 
+        width: 100%; 
+        overflow: hidden; /* Prevents body from scrolling */
+        background: #000; /* Match the status bar for a seamless look */
+        overscroll-behavior: none;
+    }
 body::before {
     content: "";
     position: fixed;
@@ -38,9 +43,18 @@ body::before {
 
 /* --- Header with Right Hamburger --- */
 .gov-header {
-    background: #fff; border-bottom: 2px solid var(--gov-orange);
-    padding: 12px 15px; display: flex; justify-content: space-between; align-items: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 50; flex-shrink: 0;
+    background: #fff; 
+    border-bottom: 2px solid var(--gov-orange);
+    padding: 12px 15px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+    z-index: 50; 
+    flex-shrink: 0;
+
+    /* CHANGE: This ensures the header starts exactly where the black bar ends */
+    margin-top: env(safe-area-inset-top); 
 }
 
 /* Left side: Branding */
@@ -67,8 +81,9 @@ body::before {
     flex: 1; 
     overflow-y: auto; 
     padding: 15px; 
-    padding-bottom: 100px; /* Space for dock */
-    scroll-behavior: smooth;
+    /* CHANGE: Increase padding so content isn't hidden behind the dock */
+    padding-bottom: calc(100px + env(safe-area-inset-bottom)); 
+    -webkit-overflow-scrolling: touch; /* Smooth momentum scrolling for iOS */
 }
 
 /* --- Carousel --- */
@@ -378,20 +393,19 @@ body::before {
 /* --- Floating Dock (Oval Bar with Pop-out Center & SVGs) --- */
 .floating-dock {
     position: absolute; 
-    bottom: 25px; 
+    /* CHANGE: Use safe-area-inset-bottom to ensure it's always above the home bar */
+    bottom: calc(15px + env(safe-area-inset-bottom)); 
     left: 50%; 
     transform: translateX(-50%);
-    width: 95%; 
+    width: 92%; 
     max-width: 420px;
-    height: 60px; /* Fixed height */
+    height: 65px;
     background: #ffffff;
-    border-radius: 60px; /* Pill shape */
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15); /* Deep shadow */
+    border-radius: 60px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
     z-index: 100;
     padding: 0 15px;
     border: 1px solid rgba(0,0,0,0.05);
-    
-    /* Critical: Allows the ONOE button to spill out */
     overflow: visible; 
 }
 
