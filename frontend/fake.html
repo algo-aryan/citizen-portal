@@ -28,6 +28,43 @@
             user-select: none;
         }
 
+        /* --- LOADING & ANTI-GLIMPSE STYLES --- */
+        #initial-loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff; z-index: 9999; display: flex;
+            flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.6s ease;
+        }
+
+        /* This prevents the content from being seen before the delay */
+        .case-content {
+            opacity: 0;
+            height: 100%; width: 100%;
+            display: flex; flex-direction: column;
+            transition: opacity 0.8s ease;
+        }
+
+        /* Class added by JS after delay */
+        .case-content.revealed {
+            opacity: 1 !important;
+        }
+
+        .fetch-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff; z-index: 1000;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+        }
+
+        .fetch-overlay.active { display: flex; }
+
+        .pulse-ring {
+            width: 40px; height: 40px; border: 3px solid var(--eci-blue);
+            border-radius: 50%; animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse { 0% { transform: scale(0.95); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+
+        /* --- ORIGINAL LAYOUT STYLES --- */
         .official-nav {
             position: fixed; top: 0; width: 100%; height: var(--nav-height);
             background: #fff; border-bottom: 3px solid var(--eci-blue);
@@ -38,45 +75,49 @@
 
         .nav-content { display: flex; align-items: center; width: 100%; gap: 15px; }
         .back-btn { text-decoration: none; color: var(--eci-blue); font-size: 28px; font-weight: 300; display: flex; align-items: center; }
-
         .nav-brand { display: flex; align-items: center; gap: 10px; }
         .emblem { height: 32px; }
         .nav-title h1 { font-size: 13px; color: var(--eci-blue); font-weight: 800; text-transform: uppercase; }
         .nav-title p { font-size: 9px; color: #d32f2f; font-weight: 700; }
 
         .viewport-snap {
-            height: 100svh; 
-            overflow-y: scroll; 
-            scroll-snap-type: y mandatory;
-            background: #fff;
+            height: 100svh; overflow-y: scroll; 
+            scroll-snap-type: y mandatory; background: #fff;
             -webkit-overflow-scrolling: touch;
         }
         .viewport-snap::-webkit-scrollbar { display: none; }
 
         .case-section {
             height: 100svh; width: 100%;
-            scroll-snap-align: start; 
-            scroll-snap-stop: always;
-            display: flex; 
-            flex-direction: column;
-            background: #fff;
-            position: relative;
+            scroll-snap-align: start; scroll-snap-stop: always;
+            display: flex; flex-direction: column;
+            background: #fff; position: relative;
         }
 
         .media-container {
-            height: 40%; background: #000; position: relative;
-            overflow: hidden; flex-shrink: 0;
-            margin-top: var(--nav-height);
-        }
-        .main-img { width: 100%; height: 100%; object-fit: cover; }
+    width: 100%;
+    /* This ensures the height is always 9/16ths of the width */
+    aspect-ratio: 4 / 3; 
+    background: #000;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+    margin-top: var(--nav-height);
+}
+
+.main-img {
+    width: 100%;
+    height: 100%;
+    /* 'contain' shows the full image; 'cover' fills the box. 
+       Since we fixed the container to 16:9, either works well 
+       if your images are exactly 16:9. */
+    object-fit: cover; 
+    object-position: center;
+}
         
         .report-pane { 
-            flex: 1; 
-            padding: 20px 15px; 
-            display: flex; 
-            flex-direction: column; 
-            background: #fff;
-            padding-bottom: calc(30px + env(safe-area-inset-bottom));
+            flex: 1; padding: 20px 15px; display: flex; flex-direction: column; 
+            background: #fff; padding-bottom: calc(30px + env(safe-area-inset-bottom));
             z-index: 10;
         }
         
@@ -94,148 +135,25 @@
         .evidence-table td { padding: 8px; border: 1px solid #ddd; font-weight: 600; vertical-align: top; }
         .key { width: 30%; color: #777; background: #fafafa; }
 
-        /* --- New Creative Scroll Hint Styling --- */
         .scroll-hint {
-            position: absolute;
-            bottom: calc(30px + env(safe-area-inset-bottom));
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-            pointer-events: none;
-            z-index: 100;
-            width: 60px; /* Container wider */
+            position: absolute; bottom: calc(30px + env(safe-area-inset-bottom));
+            left: 50%; transform: translateX(-50%);
+            display: flex; flex-direction: column; align-items: center;
+            opacity: 0; transition: opacity 0.5s ease; pointer-events: none; z-index: 100; width: 60px;
         }
 
-        /* --- Chatbot Widget Styles --- */
-#bnn-chat-wrapper {
-    position: fixed;
-    bottom: 25px;
-    right: 25px;
-    z-index: 5000;
-    font-family: 'Inter', sans-serif;
-}
-
-/* The Floating Button */
-#chat-trigger {
-    width: 60px;
-    height: 60px;
-    background: #002D58; /* Matches your Gov-Blue */
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    transition: transform 0.3s ease;
-}
-
-#chat-trigger:hover { transform: scale(1.1); }
-
-/* The Chat Window */
-#chat-window {
-    position: absolute;
-    bottom: 80px;
-    right: 0;
-    width: 320px;
-    height: 450px;
-    background: #fff;
-    border-radius: 12px;
-    border: 1px solid rgba(0,0,0,0.1);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-    display: none; /* Hidden by default */
-    flex-direction: column;
-    overflow: hidden;
-    animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Chat Header */
-.chat-header {
-    background: #002D58;
-    color: white;
-    padding: 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.chat-header h4 { font-size: 13px; font-weight: 700; text-transform: uppercase; margin: 0; }
-
-/* Chat Body */
-#chat-messages {
-    flex: 1;
-    padding: 15px;
-    overflow-y: auto;
-    background: #f8f9fa;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.msg {
-    max-width: 80%;
-    padding: 10px 12px;
-    border-radius: 8px;
-    font-size: 13px;
-    line-height: 1.4;
-}
-.msg.bot { background: #e9ecef; color: #333; align-self: flex-start; border-bottom-left-radius: 2px; }
-.msg.user { background: #002D58; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
-
-/* Chat Input */
-.chat-input-area {
-    padding: 12px;
-    border-top: 1px solid #eee;
-    display: flex;
-    gap: 8px;
-}
-.chat-input-area input {
-    flex: 1;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 8px;
-    font-size: 13px;
-    outline: none;
-}
-
-        /* Styling the SVG arrows */
         .arrow-icon {
-            width: 42px;   /* Explicitly wider width */
-            height: 18px;  /* Flattened height */
-            display: block;
-            color: #444;   /* Base dark grey color that applies to SVG stroke */
-            margin: -4px 0; /* Tighter stacking */
+            width: 42px; height: 18px; display: block;
+            color: #444; margin: -4px 0;
             animation: bounceArrows 2.5s infinite;
         }
 
-        /* Staggered animation delays */
-        .arrow-icon:nth-child(1) { animation-delay: 0s; }
-        .arrow-icon:nth-child(2) { animation-delay: 0.3s; }
-        .arrow-icon:nth-child(3) { animation-delay: 0.6s; }
-
-        /* The animation affects opacity, position, and stroke color */
         @keyframes bounceArrows {
-            0%, 100% { 
-                transform: translateY(0); 
-                opacity: 0.2; 
-                color: #999; /* Lighter grey at start/end */
-            }
-            50% { 
-                transform: translateY(10px); 
-                opacity: 1; 
-                color: #333; /* Darker grey at peak */
-            }
+            0%, 100% { transform: translateY(0); opacity: 0.2; color: #999; }
+            50% { transform: translateY(10px); opacity: 1; color: #333; }
         }
 
         .show-hint { opacity: 1 !important; }
-        /* ---------------------------------------- */
 
         .refresh-btn {
             height: 52px; background: var(--eci-blue); 
@@ -245,6 +163,14 @@
     </style>
 </head>
 <body>
+
+    <div id="initial-loader">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" style="height: 80px; margin-bottom: 20px; opacity: 0.8;">
+        <div style="width: 200px; height: 4px; background: #eee; border-radius: 10px; overflow: hidden; margin-bottom: 15px;">
+            <div id="progress-bar" style="width: 0%; height: 100%; background: var(--eci-blue); transition: width 0.3s ease;"></div>
+        </div>
+        <p id="loader-text" style="font-size: 11px; font-weight: 800; color: var(--eci-blue); text-transform: uppercase; letter-spacing: 1px;">Scanning News Feed...</p>
+    </div>
 
     <nav class="official-nav">
         <div class="nav-content">
@@ -261,143 +187,218 @@
 
     <div class="viewport-snap" id="main-scroller">
         
-        <section class="case-section">
-            <div class="media-container"><img src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&q=80&w=1000" class="main-img"></div>
-            <div class="report-pane">
-                <div class="stamp-verdict">FAKE: DOCTORED NOTICE</div>
-                <h2 class="headline">Fake Schedule for 2026 State Polls</h2>
-                <p class="brief">A viral PDF claims election dates for 5 states have been finalized. This is a forged document intended to confuse candidates.</p>
-                <table class="evidence-table">
-                    <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
-                    <tr><td class="key">SIGNATURE</td><td>Cryptographic mismatch. Digital signature invalid.</td></tr>
-                    <tr><td class="key">METADATA</td><td>Created on a mobile app rather than official servers.</td></tr>
-                    <tr><td class="key">VERIFIED</td><td>ECI confirms no such notification issued as of Dec 2025.</td></tr>
-                </table>
-            </div>
-            <div class="scroll-hint">
-                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+        <section class="case-section" id="case-1">
+            <div class="case-content">
+                <div class="media-container">
+                    <img src="images/case-1.png" class="main-img" alt="Screenshot of a deepfake video call">
+                </div>
+                <div class="report-pane">
+                    <div class="stamp-verdict">AI DEEPFAKE DETECTED</div>
+                    <h2 class="headline">FM Sitharaman "Quantum AI" Investment Scheme</h2>
+                    <p class="brief">A viral video shows Finance Minister Nirmala Sitharaman endorsing an investment platform promising ₹40,000 in 24 hours. The video is a synthetic fabrication.</p>
+                    <table class="evidence-table">
+                        <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
+                        <tr><td class="key">AUDIO</td><td>ElevenLabs AI speech classifier shows 48% probability of cloning.</td></tr>
+                        <tr><td class="key">VISUALS</td><td>Neck overlaps with hand unnaturally; torso disconnects during breathing.</td></tr>
+                        <tr><td class="key">SOURCE</td><td>Video hijacked from a "Modi Story" clip and dubbed with AI voice.</td></tr>
+                    </table>
+                </div>
+                <div class="scroll-hint"><svg class="arrow-icon" viewBox="0 0 24 24" fill="none"><path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
             </div>
         </section>
-
-        <section class="case-section">
-            <div class="media-container"><img src="https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?auto=format&fit=crop&q=80&w=1000" class="main-img"></div>
-            <div class="report-pane">
-                <div class="stamp-verdict">AI DEEPFAKE DETECTED</div>
-                <h2 class="headline">Political Leader's "Cash for Votes" Video</h2>
-                <p class="brief">A video circulating shows a politician promising ₹5,000 to every voter. This is a synthetic video using face-swap tech.</p>
-                <table class="evidence-table">
-                    <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
-                    <tr><td class="key">AI SCAN</td><td>Lip-sync latency detected. Audio frequency mismatch.</td></tr>
-                    <tr><td class="key">ARTIFACTS</td><td>Pixels around jawline blur confirming face-swapping.</td></tr>
-                    <tr><td class="key">CONTEXT</td><td>Original video was a 2022 speech about education.</td></tr>
-                </table>
-            </div>
-            <div class="scroll-hint">
-                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+        
+        <section class="case-section" id="case-2">
+            <div class="case-content">
+                <div class="media-container">
+                    <img src="images/case-2.png" class="main-img" alt="Official Election Commission of India website homepage">
+                </div>
+                <div class="report-pane">
+                    <div class="stamp-verdict">FALSE CLAIM</div>
+                    <h2 class="headline">Mandatory ECINet Voter Re-verification</h2>
+                    <p class="brief">Claims suggest that the new ECINet portal is mandatory for all voters to "stay registered." This is a misunderstanding of the portal's function.</p>
+                    <table class="evidence-table">
+                        <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
+                        <tr><td class="key">FUNCTION</td><td>ECINet is a suggestion/feedback portal, not a registry database.</td></tr>
+                        <tr><td class="key">DEADLINE</td><td>Jan 10 is for citizen suggestions, not voter eligibility.</td></tr>
+                        <tr><td class="key">ECI STATUS</td><td>Official FAQ confirms registration remains through voters.eci.gov.in.</td></tr>
+                    </table>
+                </div>
+                <div class="scroll-hint"><svg class="arrow-icon" viewBox="0 0 24 24" fill="none"><path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
             </div>
         </section>
-
-        <section class="case-section">
-            <div class="media-container"><img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=1000" class="main-img"></div>
-            <div class="report-pane">
-                <div class="stamp-verdict">MISLEADING ARCHIVE</div>
-                <h2 class="headline">"EVM Malfunction" in Current Polls</h2>
-                <p class="brief">Video showing a crowd protesting against EVMs is being shared. The video is actually 4 years old.</p>
-                <table class="evidence-table">
-                    <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
-                    <tr><td class="key">TIMELINE</td><td>Reverse image search dates this footage to May 2021.</td></tr>
-                    <tr><td class="key">GEOLOCATION</td><td>Billboards show local shops not in the current cycle.</td></tr>
-                    <tr><td class="key">OFFICIAL</td><td>Local police confirmed no such protest occurred this week.</td></tr>
-                </table>
-            </div>
-            <div class="scroll-hint">
-                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+        
+        <section class="case-section" id="case-3">
+            <div class="case-content">
+                <div class="media-container">
+                    <img src="https://pbs.twimg.com/media/F2r_yv2WcAA57yE.jpg" class="main-img" alt="A fake WhatsApp message promoting a government freebie scheme">
+                </div>
+                <div class="report-pane">
+                    <div class="stamp-verdict">FAKE: PHISHING SCAM</div>
+                    <h2 class="headline">PM's "Free Gold & Vehicles" Announcement</h2>
+                    <p class="brief">A video circulating on Jan 8th claims PM Modi is gifting gold coins and electric bikes to citizens. The link leads to a data-harvesting site.</p>
+                    <table class="evidence-table">
+                        <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
+                        <tr><td class="key">LIP-SYNC</td><td>High latency detected between audio and facial movement.</td></tr>
+                        <tr><td class="key">URL AUDIT</td><td>Links to non-gov domains aimed at stealing Aadhaar/PAN data.</td></tr>
+                        <tr><td class="key">PIB VERDICT</td><td>Confirmed as AI-generated misinformation on Jan 4 & 8, 2026.</td></tr>
+                    </table>
+                </div>
+                <div class="scroll-hint"><svg class="arrow-icon" viewBox="0 0 24 24" fill="none"><path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
             </div>
         </section>
-
-        <section class="case-section">
-            <div class="media-container"><img src="https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&q=80&w=1000" class="main-img"></div>
-            <div class="report-pane">
-                <div class="stamp-verdict">PHISHING FRAUD</div>
-                <h2 class="headline">Fake "ECI Volunteer" Recruitment</h2>
-                <p class="brief">A link is being shared asking students to register as volunteers. This is a data-stealing scam.</p>
-                <table class="evidence-table">
-                    <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
-                    <tr><td class="key">URL AUDIT</td><td>Domain is eci-volunteers.org. Official uses .gov.in.</td></tr>
-                    <tr><td class="key">SECURITY</td><td>Site asks for Aadhaar and Bank OTP illegally.</td></tr>
-                    <tr><td class="key">SOURCE</td><td>IP located outside India.</td></tr>
-                </table>
-            </div>
-            <div class="scroll-hint">
-                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+        
+        <section class="case-section" id="case-4" data-batch="true">
+            <div class="fetch-overlay"><div class="pulse-ring"></div><p style="margin-top: 15px; font-size: 11px; font-weight: 800; color: var(--eci-blue);">FETCHING VERIFIED ALERTS...</p></div>
+            <div class="case-content">
+                <div class="media-container">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Reserve_Bank_of_India_Headquarters%2C_Mumbai.jpg/1200px-Reserve_Bank_of_India_Headquarters%2C_Mumbai.jpg" class="main-img" alt="Reserve Bank of India (RBI) headquarters building in Mumbai">
+                </div>
+                <div class="report-pane">
+                    <div class="stamp-verdict">MISLEADING RUMOR</div>
+                    <h2 class="headline">RBI to Ban ₹500 Notes in ATMs by March</h2>
+                    <p class="brief">Viral posts claim ₹500 notes will be phased out from ATMs by March 31, 2026. This stems from a misinterpretation of new ATM guidelines.</p>
+                    <table class="evidence-table">
+                        <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
+                        <tr><td class="key">RBI POLICY</td><td>Directive is to *increase* ₹100/₹200 notes, not remove ₹500.</td></tr>
+                        <tr><td class="key">STATUS</td><td>₹500 remains legal tender with no plans for withdrawal.</td></tr>
+                        <tr><td class="key">DATE SOURCED</td><td>Rumor originated from a misinterpreted "Capital TV" report.</td></tr>
+                    </table>
+                </div>
+                <div class="scroll-hint"><svg class="arrow-icon" viewBox="0 0 24 24" fill="none"><path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
             </div>
         </section>
-
-        <section class="case-section">
-            <div class="media-container"><img src="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=1000" class="main-img"></div>
-            <div class="report-pane">
-                <div class="stamp-verdict">AI AUDIO CLONE</div>
-                <h2 class="headline">Leaked Audio of Election Commissioner</h2>
-                <p class="brief">An audio clip claiming to be a secret phone call is viral. This is an AI voice clone.</p>
-                <table class="evidence-table">
-                    <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
-                    <tr><td class="key">SPECTROGRAM</td><td>Robotic flat-tones detected in high frequencies.</td></tr>
-                    <tr><td class="key">LANGUAGE</td><td>Voice uses unnatural phrasing.</td></tr>
-                    <tr><td class="key">TECH</td><td>Cloned using samples from a previous conference.</td></tr>
-                </table>
-            </div>
-            <div class="scroll-hint">
-                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+        
+        <section class="case-section" id="case-5">
+            <div class="case-content">
+                <div class="media-container">
+                    <img src="https://images.hindustantimes.com/img/2022/07/23/1600x900/ED_raid_Kolkata_1658551806595_1658551806799.jpg" class="main-img" alt="Enforcement Directorate (ED) officials during a raid">
+                </div>
+                <div class="report-pane">
+                    <div class="stamp-verdict">NARRATIVE MISINFORMATION</div>
+                    <h2 class="headline">I-PAC Raids: Claims of Data Theft vs Deletion</h2>
+                    <p class="brief">TMC alleges ED "wiped" internal election strategy disks during raids on Pratik Jain. ED alleges CM Banerjee removed physical evidence.</p>
+                    <table class="evidence-table">
+                        <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
+                        <tr><td class="key">DIGITAL PATH</td><td>ED confirmed cloning of hard drives; no "wiping" protocol used.</td></tr>
+                        <tr><td class="key">CCTV LOGS</td><td>Conflict at the site (Jan 8) being reviewed by Calcutta High Court.</td></tr>
+                        <tr><td class="key">VERDICT</td><td>Both "stolen data" and "deleted files" claims are unverified political rhetoric.</td></tr>
+                    </table>
+                </div>
+                <div class="scroll-hint"><svg class="arrow-icon" viewBox="0 0 24 24" fill="none"><path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
             </div>
         </section>
-
+        
+        <section class="case-section" id="case-6">
+            <div class="case-content">
+                <div class="media-container">
+                    <img src="https://pbs.twimg.com/media/F-4_2Q8X0AAcZ_0.jpg" class="main-img" style="object-fit: contain; background: #f0f0f0;" alt="A forged US government document with a fake seal">
+                </div>
+                <div class="report-pane">
+                    <div class="stamp-verdict">FORGED DOCUMENT</div>
+                    <h2 class="headline">US Tariff "Target List" for Indian Firms</h2>
+                    <p class="brief">A leaked PDF listing 50 Indian companies facing 500% US tariffs for Russian oil trade. The document uses fake US Trade Representative headers.</p>
+                    <table class="evidence-table">
+                        <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
+                        <tr><td class="key">HEADER</td><td>Font mismatch in seal; office address listed is outdated (2020).</td></tr>
+                        <tr><td class="key">BILL STATUS</td><td>US Bill allows *up to* 500% but no specific list is authorized yet.</td></tr>
+                        <tr><td class="key">MARKET IMPACT</td><td>Manipulated to trigger panic selling in energy stocks.</td></tr>
+                    </table>
+                </div>
+                <div class="scroll-hint"><svg class="arrow-icon" viewBox="0 0 24 24" fill="none"><path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            </div>
+        </section>
+        
+        <section class="case-section" id="case-7" data-batch="true">
+            <div class="fetch-overlay"><div class="pulse-ring"></div><p style="margin-top: 15px; font-size: 11px; font-weight: 800; color: var(--eci-blue);">REFRESHING ALERT DATA...</p></div>
+            <div class="case-content">
+                <div class="media-container">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/High_Court_of_Andhra_Pradesh.jpg/1200px-High_Court_of_Andhra_Pradesh.jpg" class="main-img" alt="The High Court of Andhra Pradesh building">
+                </div>
+                <div class="report-pane">
+                    <div class="stamp-verdict">SECURITY HOAX</div>
+                    <h2 class="headline">Coordinated "Bomb Scare" at AP District Courts</h2>
+                    <p class="brief">Mails received on Jan 8th threatened blasts at Eluru and Ananthapur courts. Viral audio claimed the blasts were linked to political trials.</p>
+                    <table class="evidence-table">
+                        <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
+                        <tr><td class="key">IP TRACE</td><td>Threat emails originated from a proxy server in Eastern Europe.</td></tr>
+                        <tr><td class="key">SEARCH</td><td>Zero explosives found; court proceedings resumed Jan 9th.</td></tr>
+                        <tr><td class="key">INTENT</td><td>Designed to delay hearing of multi-crore coal pilferage cases.</td></tr>
+                    </table>
+                </div>
+                <div class="scroll-hint"><svg class="arrow-icon" viewBox="0 0 24 24" fill="none"><path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            </div>
+        </section>
+        
+        <section class="case-section" id="case-8">
+            <div class="case-content">
+                <div class="media-container">
+                    <img src="https://images.unsplash.com/photo-1508514177221-188b1cf2f24f?auto=format&fit=crop&q=80&w=1000" class="main-img" alt="Solar panels installed on agricultural land in India">
+                </div>
+                <div class="report-pane">
+                    <div class="stamp-verdict">FINANCIAL MISINFORMATION</div>
+                    <h2 class="headline">Termination of Solar Subsidies after US Exit</h2>
+                    <p class="brief">Rumors claim that following the US exit from the International Solar Alliance (ISA), India will scrap PM-KUSUM solar grants.</p>
+                    <table class="evidence-table">
+                        <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
+                        <tr><td class="key">FUNDING</td><td>ISA is a facilitator; PM-KUSUM is funded by the Indian Union Budget.</td></tr>
+                        <tr><td class="key">IMPACT</td><td>US contribution was $2.1M; India’s solar goal is $1,000B—no dependency.</td></tr>
+                        <tr><td class="key">STATUS</td><td>Subsidy cycles for 2026-27 are already cabinet-approved.</td></tr>
+                    </table>
+                </div>
+                <div class="scroll-hint"><svg class="arrow-icon" viewBox="0 0 24 24" fill="none"><path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            </div>
+        </section>
+        
+        <section class="case-section" id="case-9">
+            <div class="case-content">
+                <div class="media-container">
+                    <img src="https://pbs.twimg.com/media/GA69q-wXYAA_6uH.jpg" class="main-img" style="object-fit: contain; background: #f0f0f0;" alt="A fake government job appointment letter">
+                </div>
+                <div class="report-pane">
+                    <div class="stamp-verdict">ACTIVE SCAM</div>
+                    <h2 class="headline">Ministry of Personnel "Scam Rectification" Letters</h2>
+                    <p class="brief">Scammers are sending fake appointment letters to victims of the "Railway Job Scam," claiming the ED has authorized their hiring.</p>
+                    <table class="evidence-table">
+                        <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
+                        <tr><td class="key">AUTHORITY</td><td>ED has no mandate to issue government joining letters.</td></tr>
+                        <tr><td class="key">EMAIL</td><td>Sent from 'rectify-gov.in'—official is nic.in or gov.in.</td></tr>
+                        <tr><td class="key">FEES</td><td>Asks for "security clearance deposit" via UPI—illegal protocol.</td></tr>
+                    </table>
+                </div>
+                <div class="scroll-hint"><svg class="arrow-icon" viewBox="0 0 24 24" fill="none"><path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            </div>
+        </section>
+        
+        <section class="case-section" id="case-10" data-batch="true">
+            <div class="fetch-overlay"><div class="pulse-ring"></div><p style="margin-top: 15px; font-size: 11px; font-weight: 800; color: var(--eci-blue);">FINALIZING ALERT STREAM...</p></div>
+            <div class="case-content">
+                <div class="media-container">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Vijay_at_the_Nadigar_Sangam_Protest.jpg/1200px-Vijay_at_the_Nadigar_Sangam_Protest.jpg" class="main-img" style="object-position: top;" alt="Actor Vijay at a public gathering">
+                </div>
+                <div class="report-pane">
+                    <div class="stamp-verdict">FALSE: POSTPONEMENT ONLY</div>
+                    <h2 class="headline">Government "Ban" on Vijay's 'Jana Nayagan'</h2>
+                    <p class="brief">Posts allege the Central Govt banned the film due to its political nature. The film was scheduled for Jan 9th release.</p>
+                    <table class="evidence-table">
+                        <tr><th>Parameter</th><th>Forensic Evidence</th></tr>
+                        <tr><td class="key">LEGAL</td><td>Madras High Court reserved orders; no "ban" issued by the Centre.</td></tr>
+                        <tr><td class="key">REASON</td><td>Postponed due to unresolved certification (CBFC) issues.</td></tr>
+                        <tr><td class="key">OFFICIAL</td><td>Makers confirmed on Jan 7 that release is delayed, not cancelled.</td></tr>
+                    </table>
+                </div>
+                <div class="scroll-hint"><svg class="arrow-icon" viewBox="0 0 24 24" fill="none"><path d="M4 9L12 17L20 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            </div>
+        </section>
+        
         <section class="case-section">
-            <div class="media-container"><img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&q=80&w=1000" class="main-img"></div>
-            <div class="report-pane">
-                <div class="stamp-verdict" style="border-color:#2e7d32; color:#2e7d32;">SECURE STATUS</div>
-                <h2 class="headline">Daily Integrity Report Complete</h2>
-                <p class="brief">You have reviewed all flagged misinformation for today. Sharing unverified news is a legal offense.</p>
-                <button class="refresh-btn" onclick="location.reload()">REFRESH LIVE FEED</button>
+            <div class="case-content">
+                <div class="media-container"><img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&q=80&w=1000" class="main-img" alt="A secure data center representing verified logs"></div>
+                <div class="report-pane">
+                    <div class="stamp-verdict" style="border-color:#2e7d32; color:#2e7d32;">FORENSIC LOGS CLEAR</div>
+                    <h2 class="headline">Daily Integrity Report Complete</h2>
+                    <p class="brief">You have reviewed all significant Jan 5-9 misinformation flags. These records are verified by PIB and the ECI Digital Cell.</p>
+                    <button class="refresh-btn" onclick="location.reload()">REFRESH LIVE FEED</button>
+                </div>
             </div>
         </section>
     </div>
@@ -408,6 +409,58 @@
         let idleTimer;
         let activeSection = sections[0];
 
+        // 1. Initial 4s Delay Logic
+        window.addEventListener('load', () => {
+            let progress = 0;
+            const bar = document.getElementById('progress-bar');
+            const text = document.getElementById('loader-text');
+            const statuses = ["Syncing News Databases...", "Verifying Fact-Checks...", "Filtering Misinformation...", "Feed Secured."];
+            
+            const interval = setInterval(() => {
+                progress += 5;
+                bar.style.width = progress + "%";
+                if(progress % 25 === 0) text.innerText = statuses[Math.floor(progress/26)];
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        document.getElementById('initial-loader').style.opacity = '0';
+                        setTimeout(() => {
+                            document.getElementById('initial-loader').remove();
+                            // Reveal first batch immediately after loader
+                            document.querySelectorAll('#case-1 .case-content, #case-2 .case-content, #case-3 .case-content').forEach(c => c.classList.add('revealed'));
+                        }, 600);
+                        restartInactivityTimer();
+                    }, 400);
+                }
+            }, 180); 
+        });
+
+        // 2. Progressive 2.5s Batch Delay Logic
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    activeSection = entry.target;
+                    const content = activeSection.querySelector('.case-content');
+
+                    if (activeSection.dataset.batch === "true" && !activeSection.dataset.loaded) {
+                        const overlay = activeSection.querySelector('.fetch-overlay');
+                        overlay.classList.add('active');
+                        
+                        setTimeout(() => {
+                            overlay.classList.remove('active');
+                            content.classList.add('revealed');
+                            activeSection.dataset.loaded = "true";
+                        }, 2500); 
+                    } else if (content) {
+                        // For non-batch sections, reveal immediately when seen
+                        content.classList.add('revealed');
+                    }
+                    restartInactivityTimer();
+                }
+            });
+        }, { threshold: 0.6 });
+
         function hideAllHints() {
             document.querySelectorAll('.scroll-hint').forEach(h => h.classList.remove('show-hint'));
         }
@@ -415,29 +468,17 @@
         function restartInactivityTimer() {
             clearTimeout(idleTimer);
             hideAllHints();
-
             if (activeSection && !activeSection.querySelector('.refresh-btn')) {
                 idleTimer = setTimeout(() => {
                     const hint = activeSection.querySelector('.scroll-hint');
                     if (hint) hint.classList.add('show-hint');
-                }, 10000); 
+                }, 5000); 
             }
         }
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    activeSection = entry.target;
-                    restartInactivityTimer();
-                }
-            });
-        }, { threshold: 0.6 });
-
         sections.forEach(s => observer.observe(s));
-
         scroller.addEventListener('scroll', restartInactivityTimer, {passive: true});
         scroller.addEventListener('touchstart', hideAllHints, {passive: true});
-        window.addEventListener('load', restartInactivityTimer);
     </script>
     <script src="chatbot.js"></script>
 
