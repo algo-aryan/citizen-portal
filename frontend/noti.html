@@ -331,42 +331,44 @@
     ];
 
     const container = document.getElementById('notice-container');
-    // FIXED: Corrected variable naming and ensured base URL exists
-    // Define the base URL properly
-    const BASE_URL = window.location.origin + "/"; 
 
-    notices.forEach(notice => {
-        const card = document.createElement('div');
-        card.className = 'notice-card';
-        
-        // FIXED: Changed 'pdfUrl' to 'notice.pdf_url'
-        // Using your custom scheme for the Android Intent
-        const viewerUrl = `pdfviewer://open?url=${encodeURIComponent(notice.pdf_url)}`;
+// Define your base URL (Change this to your actual deployed domain)
+const BASE_URL = "https://citizen-portal-psi.vercel.app/"; 
 
-        card.innerHTML = `
-            <div class="card-main">
-                <div class="meta-box">
-                    <span class="date-day">${notice.day}</span>
-                    <span class="date-month">${notice.month} ${notice.year}</span>
-                </div>
-                <div class="content-box">
-                    <span class="doc-category">${notice.category}</span>
-                    <span class="doc-name">${notice.name}</span>
-                    <div class="actions">
-                        <a href="${viewerUrl}" class="btn btn-primary">VIEW</a>
-                        
-                        <a href="${notice.pdf_url}" download="Notice_${notice.day}.pdf" target="_blank" class="btn btn-outline">DOWNLOAD</a>
-                    </div>
+notices.forEach(notice => {
+// Construct the full path to the PDF on your server
+// Assuming notice.pdf_path exists, or just using "1.pdf" as in your example
+const pdfUrl = BASE_URL + "1.pdf"; 
+
+// Create the Google Viewer Link
+const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
+
+const card = document.createElement('div');
+card.className = 'notice-card';
+card.innerHTML = `
+    <div class="card-main">
+            <div class="meta-box">
+                <span class="date-day">${notice.day}</span>
+                <span class="date-month">${notice.month} ${notice.year}</span>
+            </div>
+            <div class="content-box">
+                <span class="doc-category">${notice.category}</span>
+                <span class="doc-name">${notice.name}</span>
+                <div class="actions">
+                                        <a href="${viewerUrl}" target="_blank" class="btn btn-primary">VIEW</a>
+                
+                <a href="${pdfUrl}" download="Notice.pdf" class="btn btn-outline">DOWNLOAD</a>
                 </div>
             </div>
-            <div class="summary-box">
-                <ul>
-                    ${notice.summary.map(point => `<li>${point}</li>`).join('')}
-                </ul>
-            </div>
-        `;
-        container.appendChild(card);
-    });
+        </div>
+        <div class="summary-box">
+            <ul>
+                ${notice.summary.map(point => `<li>${point}</li>`).join('')}
+            </ul>
+        </div>
+    `;
+container.appendChild(card);
+});
 </script>
 <script src="chatbot.js"></script>
 
