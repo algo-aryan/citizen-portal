@@ -331,13 +331,17 @@
     ];
 
     const container = document.getElementById('notice-container');
+    // FIXED: Corrected variable naming and ensured base URL exists
+    // Define the base URL properly
+    const BASE_URL = window.location.origin + "/"; 
 
     notices.forEach(notice => {
         const card = document.createElement('div');
         card.className = 'notice-card';
         
-        // Using the real PDF/URL from each notice object
-        const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(notice.pdf_url)}&embedded=true`;
+        // FIXED: Changed 'pdfUrl' to 'notice.pdf_url'
+        // Using your custom scheme for the Android Intent
+        const viewerUrl = `pdfviewer://open?url=${encodeURIComponent(notice.pdf_url)}`;
 
         card.innerHTML = `
             <div class="card-main">
@@ -349,7 +353,8 @@
                     <span class="doc-category">${notice.category}</span>
                     <span class="doc-name">${notice.name}</span>
                     <div class="actions">
-                        <a href="${viewerUrl}" target="_blank" rel="noopener" class="btn btn-primary">VIEW</a>
+                        <a href="${viewerUrl}" class="btn btn-primary">VIEW</a>
+                        
                         <a href="${notice.pdf_url}" download="Notice_${notice.day}.pdf" target="_blank" class="btn btn-outline">DOWNLOAD</a>
                     </div>
                 </div>
