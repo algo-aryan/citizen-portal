@@ -93,70 +93,73 @@ def handle_chat():
 @app.route('/analyze-media', methods=['POST', 'OPTIONS'])
 def analyze_media():
     if request.method == 'OPTIONS':
-        response = make_response()
-        response.headers.add("Access-Control-Allow-Origin", "*")
-        response.headers.add("Access-Control-Allow-Headers", "*")
-        response.headers.add("Access-Control-Allow-Methods", "*")
-        return response
+        return _build_cors_preflight_response()
 
     try:
         text_claim = request.form.get('text', '')
         image_file = request.files.get('image')
 
-        if not image_file:
-            return jsonify({"error": "No image uploaded"}), 400
+        vlm_analysis = "No image provided for visual analysis."
+        search_analysis = "No text claim provided for fact-checking."
 
-        temp_path = "temp_analysis.png"
-        image_file.save(temp_path)
-        img = PIL.Image.open(temp_path)
+        # Case 1: If Image is present, do Visual Forensics
+        if image_file:
+            temp_path = "temp_analysis.png"
+            image_file.save(temp_path)
+            img = PIL.Image.open(temp_path)
+            
+            vlm_res = client.models.generate_content(
+                model="gemini-2.0-flash", 
+                contents=[img, "Analyze this for AI manipulation, deepfake artifacts, or digital tampering. Be neutral."]
+            )
+            vlm_analysis = vlm_res.text
 
-        # 1. Balanced Vision Analysis (Neutral approach)
-        vlm_res = client.models.generate_content(
-            model="gemini-2.0-flash", 
-            contents=[img, "Perform a forensic analysis. Is this image a standard, authentic photograph, or does it show signs of AI generation/manipulation (like GAN artifacts, inconsistent lighting, or distorted textures)? Describe honestly."]
-        )
+        # Case 2: If Text is present, do Grounding/Search
+        if text_claim:
+            search_tool = types.Tool(google_search=types.GoogleSearch())
+            # We include vlm_analysis context even if it's the "No image" string
+            search_res = client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=f"Fact check: {text_claim}. Visual context: {vlm_analysis}",
+                config=types.GenerateContentConfig(tools=[search_tool])
+            )
+            search_analysis = search_res.text
 
-        # 2. Grounding Search
-        search_tool = types.Tool(google_search=types.GoogleSearch())
-        search_res = client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=f"Fact check this claim: {text_claim}. Is this a known news event? Use this visual context: {vlm_res.text}",
-            config=types.GenerateContentConfig(tools=[search_tool])
-        )
-
-        # 3. Strict Synthesis Prompt
-        # Removed the hardcoded StackExchange link to prevent placeholder hallucination
+        # Final Synthesis
         final_prompt = f"""
-        Visual Evidence: {vlm_res.text}
-        Search Evidence: {search_res.text}
-        Claim to Verify: {text_claim}
-        
-        Task: Based on the evidence, classify the content.
+        Instructions: Synthesize a verdict.
+        Visual Evidence: {vlm_analysis}
+        Search Evidence: {search_analysis}
+        User Claim: {text_claim if text_claim else 'N/A (Image analysis only)'}
         
         Return ONLY a JSON object:
         {{
-          "verdict": "FACT" or "FAKE" or "UNVERIFIED",
-          "reasoning": "A 2-sentence factual explanation.",
-          "sources": "A single URL to a credible source verifying this. If no specific matching source is found, return exactly 'Not Found'.",
-          "confidence": "HIGH", "MEDIUM", or "LOW",
-          "type": "Authentic Content", "Deepfake", "AI Generated", or "Misleading Context"
+          "verdict": "FACT/FAKE/UNVERIFIED",
+          "reasoning": "2 sentence summary.",
+          "sources": "Specific URL or 'Not Found'",
+          "confidence": "HIGH/MEDIUM/LOW",
+          "type": "Authentic/Deepfake/Misleading/AI Generated"
         }}
         """
         
         verdict_res = client.models.generate_content(model="gemini-2.0-flash", contents=final_prompt)
         
-        # Clean response string
+        # Standard JSON cleaning logic
         raw_text = verdict_res.text.strip()
         if "```json" in raw_text:
             raw_text = raw_text.split("```json")[1].split("```")[0].strip()
-        elif "```" in raw_text:
-            raw_text = raw_text.split("```")[1].split("```")[0].strip()
-            
+        
         return jsonify(json.loads(raw_text))
 
     except Exception as e:
-        print(f"Forensic Error: {e}")
-        return jsonify({"verdict": "ERROR", "reasoning": "Forensic analysis failed.", "sources": "Not Found"}), 500
+        return jsonify({"verdict": "ERROR", "reasoning": str(e), "sources": "Not Found"}), 500
+
+def _build_cors_preflight_response():
+    response = make_response()
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add("Access-Control-Allow-Headers", "*")
+    response.headers.add("Access-Control-Allow-Methods", "*")
+    return response
 
 
 if __name__ == '__main__':
