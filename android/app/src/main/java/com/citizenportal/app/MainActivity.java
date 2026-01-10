@@ -26,12 +26,14 @@ public class MainActivity extends BridgeActivity {
         WebView webView = this.getBridge().getWebView();
         WebSettings settings = webView.getSettings();
         
-        // CRITICAL FIX: Allow the web page to read shared files
+        // --- Webview Security Configuration ---
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
         settings.setAllowFileAccessFromFileURLs(true);
         settings.setAllowUniversalAccessFromFileURLs(true);
+        settings.setJavaScriptEnabled(true);
         
+        // Register the bridge for lab.html to "pull" the image
         webView.addJavascriptInterface(new WebAppInterface(), "AndroidBridge");
         
         handleIncomingShare(getIntent());
@@ -45,23 +47,35 @@ public class MainActivity extends BridgeActivity {
     }
 
     private void handleIncomingShare(Intent intent) {
-        if (Intent.ACTION_SEND.equals(intent.getAction()) && intent.getType() != null) {
-            if (intent.getType().startsWith("image/")) {
-                Uri imageUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
-                if (imageUri != null) {
-                    sharedImageUri = imageUri.toString();
-                    // Navigate to lab.html
-                    this.getBridge().getWebView().loadUrl("file:///android_asset/public/lab.html");
+        String action = intent.getAction();
+        String type = intent.getType();
+
+        if (Intent.ACTION_SEND.equals(action) && type != null && type.startsWith("image/")) {
+            Uri imageUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
+            if (imageUri != null) {
+                // CRITICAL FIX: Explicitly grant read permission to this URI 
+                // This ensures the WebView can 'fetch' the file even after page navigation
+                try {
+                    getContentResolver().takePersistableUriPermission(imageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                } catch (SecurityException e) {
+                    // Fallback for non-persistable URIs
+                    grantUriPermission(getPackageName(), imageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 }
+
+                sharedImageUri = imageUri.toString();
+                
+                // Redirect to the lab page
+                this.getBridge().getWebView().loadUrl("file:///android_asset/public/lab.html");
             }
         }
     }
 
+    // Handshake class
     public class WebAppInterface {
         @JavascriptInterface
         public String getPendingImage() {
             String temp = sharedImageUri;
-            sharedImageUri = null; 
+            sharedImageUri = null; // Clear to prevent re-loading on refresh
             return temp;
         }
     }
@@ -81,11 +95,12 @@ public class MainActivity extends BridgeActivity {
                         request.addRequestHeader("User-Agent", userAgent);
                         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
                         request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, URLUtil.guessFileName(url, contentDisposition, mimetype));
+                        
                         DownloadManager dm = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
                         dm.enqueue(request);
                         Toast.makeText(getApplicationContext(), "Download Started...", Toast.LENGTH_SHORT).show();
                     } catch (Exception e) {
-                        Toast.makeText(getApplicationContext(), "Download Failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), "Download Failed", Toast.LENGTH_LONG).show();
                     }
                 }
             });

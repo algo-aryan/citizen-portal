@@ -395,15 +395,24 @@
     const fileInput = document.getElementById('file-input');
     let selectedFile = null;
 
-    // Handshake logic: Automatically runs on page load
-    window.addEventListener('load', async () => {
-        if (window.AndroidBridge && typeof window.AndroidBridge.getPendingImage === 'function') {
-            const sharedUri = window.AndroidBridge.getPendingImage();
-            if (sharedUri) {
-                await processSharedImage(sharedUri);
+    // Handshake logic with retry mechanism
+    async function initHandshake() {
+        const checkBridge = async (retries = 5) => {
+            if (window.AndroidBridge && typeof window.AndroidBridge.getPendingImage === 'function') {
+                const sharedUri = window.AndroidBridge.getPendingImage();
+                if (sharedUri) {
+                    await processSharedImage(sharedUri);
+                }
+            } else if (retries > 0) {
+                // Wait 100ms and try again if bridge isn't ready yet
+                setTimeout(() => checkBridge(retries - 1), 100);
             }
-        }
-    });
+        };
+        await checkBridge();
+    }
+
+    // Run on load
+    window.addEventListener('load', initHandshake);
 
     async function processSharedImage(uri) {
         const fileNameDisplay = document.getElementById('file-name');
@@ -411,32 +420,36 @@
 
         try {
             fileNameDisplay.innerText = "Importing evidence...";
+            
+            // Set source for preview
             scanImg.src = uri;
 
-            // 1. Fetch the image data
+            // 1. Fetch the image data from the Android Content URI
             const response = await fetch(uri);
             const blob = await response.blob();
             
-            // 2. Create a real File object
+            // 2. Create a real File object for the neural scan engine
             const file = new File([blob], "shared_evidence.jpg", { type: blob.type || "image/jpeg" });
 
-            // 3. CRITICAL: Inject the file into the global variable AND the hidden input
+            // 3. Assign to global variable and simulate input selection
             selectedFile = file;
             
-            // This ensures any code listening to the input also sees the file
             const dataTransfer = new DataTransfer();
             dataTransfer.items.add(file);
             fileInput.files = dataTransfer.files;
 
             fileNameDisplay.innerText = "Evidence Secured: Ready for Scan";
             fileNameDisplay.style.color = 'var(--live-green)';
-            console.log("File successfully uploaded to form:", selectedFile);
+            
+            console.log("Shared file successfully bound to form.");
         } catch (e) {
             console.error("Auto-import failed", e);
-            fileNameDisplay.innerText = "Error importing shared file";
+            fileNameDisplay.innerText = "Security block: Cannot read shared file";
+            fileNameDisplay.style.color = 'var(--alert-red)';
         }
     }
 
+    // Manual upload fallback
     fileInput.onchange = (e) => {
         if(e.target.files.length > 0) {
             selectedFile = e.target.files[0];
@@ -446,10 +459,15 @@
     };
 
     function startScan() {
-        // Now 'selectedFile' will not be null
         const text = document.getElementById('claim-text').value;
-        if(!text || !selectedFile) {
-            alert("Verification Failed: Context and Media are mandatory.");
+        
+        // Final validation
+        if(!text.trim()) {
+            alert("Please provide the claim context for analysis.");
+            return;
+        }
+        if(!selectedFile) {
+            alert("No media detected. Please upload or share an image.");
             return;
         }
 
@@ -478,14 +496,20 @@
         timeline.forEach((item, idx) => {
             setTimeout(() => {
                 const el = document.getElementById(item.id);
-                el.classList.add('active');
-                if(idx > 0) document.getElementById(timeline[idx-1].id).classList.replace('active', 'done');
+                if (el) {
+                    el.classList.add('active');
+                    if(idx > 0) {
+                        const prevEl = document.getElementById(timeline[idx-1].id);
+                        if (prevEl) prevEl.classList.replace('active', 'done');
+                    }
+                }
             }, item.delay);
         });
 
         setTimeout(() => showStep(3), 16000);
     }
 </script>
+
 
 <script src="chatbot.js"></script>
 
