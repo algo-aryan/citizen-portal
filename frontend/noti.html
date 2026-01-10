@@ -312,32 +312,34 @@
 
     const container = document.getElementById('notice-container');
 
-    notices.forEach(notice => {
-        const card = document.createElement('div');
-        card.className = 'notice-card';
-        card.innerHTML = `
-            <div class="card-main">
-                <div class="meta-box">
-                    <span class="date-day">${notice.day}</span>
-                    <span class="date-month">${notice.month} ${notice.year}</span>
-                </div>
-                <div class="content-box">
-                    <span class="doc-category">${notice.category}</span>
-                    <span class="doc-name">${notice.name}</span>
-                    <div class="actions">
-                        <a href="1.pdf" target="_blank" rel="noopener" class="btn btn-primary">VIEW</a>
-                        <a href="1.pdf" download="Notice_${notice.day}.pdf" target="_blank" class="btn btn-outline">DOWNLOAD</a>
-                    </div>
+    // Define your base URL (Change this to your actual deployed domain)
+const BASE_URL = "https://citizen-portal-psi.vercel.app/"; 
+
+notices.forEach(notice => {
+    // Construct the full path to the PDF on your server
+    // Assuming notice.pdf_path exists, or just using "1.pdf" as in your example
+    const pdfUrl = BASE_URL + "1.pdf"; 
+    
+    // Create the Google Viewer Link
+    const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
+
+    const card = document.createElement('div');
+    card.className = 'notice-card';
+    card.innerHTML = `
+        <div class="card-main">
+            <div class="content-box">
+                <span class="doc-category">${notice.category}</span>
+                <span class="doc-name">${notice.name}</span>
+                <div class="actions">
+                    <a href="${viewerUrl}" target="_blank" class="btn btn-primary">VIEW</a>
+                    
+                    <a href="${pdfUrl}" download="Notice.pdf" class="btn btn-outline">DOWNLOAD</a>
                 </div>
             </div>
-            <div class="summary-box">
-                <ul>
-                    ${notice.summary.map(point => `<li>${point}</li>`).join('')}
-                </ul>
-            </div>
+        </div>
         `;
-        container.appendChild(card);
-    });
+    container.appendChild(card);
+});
 </script>
 <script src="chatbot.js"></script>
 

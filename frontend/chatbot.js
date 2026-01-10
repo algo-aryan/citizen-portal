@@ -1,22 +1,18 @@
 (function() {
-    // 1. Inject High-Fidelity Styles
+    // 1. Inject High-Fidelity Styles (No changes here)
     const style = document.createElement('style');
     style.innerHTML = `
         #citizen-bot-wrapper {
             position: fixed; bottom: 25px; right: 25px;
             z-index: 10000; font-family: 'Inter', sans-serif;
         }
-        
-        /* Lighter Blue Trigger with Sharp Black Border */
         #bot-trigger {
             width: 54px; height: 54px; 
-            background: #3498db; /* Lighter, vibrant blue */
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            background: #3498db; border-radius: 50%; display: flex; align-items: center; justify-content: center;
             cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.15);
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         #bot-trigger:hover { transform: scale(1.1); background: #2980b9; }
-        
         #bot-window {
             position: absolute; bottom: 70px; right: 0;
             width: 315px; height: 430px;
@@ -25,51 +21,29 @@
             display: none; flex-direction: column; overflow: hidden;
             animation: botFade 0.3s ease;
         }
-
-        @media (max-width: 600px) {
-            #bot-window {
-                position: fixed; bottom: 90px; left: 15px; right: 15px;
-                width: auto; height: 60vh;
-            }
-        }
-
+        @media (max-width: 600px) { #bot-window { position: fixed; bottom: 90px; left: 15px; right: 15px; width: auto; height: 60vh; } }
         @keyframes botFade { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-
         .bot-header { background: #002D58; color: white; padding: 16px; display: flex; justify-content: space-between; align-items: center; }
         .bot-header h4 { font-size: 13px; margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-
         #bot-messages { flex: 1; padding: 15px; overflow-y: auto; background: #fcfcfc; display: flex; flex-direction: column; gap: 12px; }
-        
         .msg { max-width: 85%; padding: 12px 14px; border-radius: 14px; font-size: 13px; line-height: 1.5; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
         .msg.bot { background: #fff; color: #2c3e50; align-self: flex-start; border: 1px solid #edf2f7; border-bottom-left-radius: 2px; }
         .msg.user { background: #002D58; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
-
         .typing { display: flex; gap: 4px; padding: 12px; background: #fff; border: 1px solid #edf2f7; border-radius: 12px; align-self: flex-start; }
         .dot { width: 5px; height: 5px; background: #3498db; border-radius: 50%; animation: wavy 1.3s infinite; }
         .dot:nth-child(2) { animation-delay: 0.15s; }
         .dot:nth-child(3) { animation-delay: 0.3s; }
         @keyframes wavy { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-5px); } }
-
-        /* Modernized Pre-built Question Cards */
-        #bot-suggestions { 
-            padding: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; 
-            background: #f8fafc; border-top: 1px solid #eee;
-        }
-        .chip { 
-            background: #fff; border: 1px solid #e2e8f0; color: #002D58; 
-            padding: 12px 8px; border-radius: 10px; font-size: 10px; font-weight: 800; 
-            text-align: center; cursor: pointer; transition: all 0.2s;
-            line-height: 1.3; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        }
+        #bot-suggestions { padding: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; border-top: 1px solid #eee; }
+        .chip { background: #fff; border: 1px solid #e2e8f0; color: #002D58; padding: 12px 8px; border-radius: 10px; font-size: 10px; font-weight: 800; text-align: center; cursor: pointer; transition: all 0.2s; line-height: 1.3; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
         .chip:hover { border-color: #3498db; color: #3498db; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
-
         .bot-input { padding: 12px; border-top: 1px solid #eee; display: flex; gap: 8px; background: #fff; }
         .bot-input input { flex: 1; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; font-size: 13.5px; outline: none; transition: 0.2s; }
         .bot-input input:focus { border-color: #3498db; }
     `;
     document.head.appendChild(style);
 
-    // 2. HTML Structure
+    // 2. HTML Structure (Strictly same)
     const botHTML = `
     <div id="citizen-bot-wrapper">
         <div id="bot-window">
@@ -100,15 +74,7 @@
     </div>`;
     document.body.insertAdjacentHTML('beforeend', botHTML);
 
-    // 3. Logic & Hardcoded Answers
-    const responses = {
-        "how do i register to vote?": "Empower yourself! Visit <strong>voters.eci.gov.in</strong> to fill out Form 6. You'll need a passport-sized photo, age proof (like an Aadhaar or Birth Certificate), and current address proof.",
-        "who is the current pm?": "As of January 2026, <strong>Shri Narendra Modi</strong> continues to serve as the Prime Minister of India.",
-        "one nation one election?": "The O.N.O.E. policy is a transformative proposal to hold Lok Sabha and State Assembly elections together to reduce public expenditure and administrative hurdles.",
-        "next general election?": "The current 18th Lok Sabha term runs until 2029. Therefore, the next General Elections are slated for <strong>2029</strong>.",
-        "check polling booth?": "You can find your specific polling station via the <strong>Voter Helpline App</strong> or by entering your EPIC number on the ECI portal."
-    };
-
+    // 3. Logic: All functions bound to window to ensure HTML attributes work
     window.toggleBot = () => {
         const win = document.getElementById('bot-window');
         win.style.display = (win.style.display === 'flex') ? 'none' : 'flex';
@@ -116,19 +82,21 @@
 
     window.handleChip = (text) => {
         document.getElementById('bot-query').value = text;
-        userSend();
+        window.userSend();
     };
 
-    window.userSend = () => {
+    window.userSend = async () => {
         const input = document.getElementById('bot-query');
         const container = document.getElementById('bot-messages');
         const val = input.value.trim();
         if(!val) return;
 
+        // UI: Add User Message
         container.innerHTML += `<div class="msg user">${val}</div>`;
         input.value = '';
         container.scrollTop = container.scrollHeight;
 
+        // UI: Add Thinking Animation
         const thinkingId = 'thinking-' + Date.now();
         container.innerHTML += `
             <div class="typing" id="${thinkingId}">
@@ -136,19 +104,32 @@
             </div>`;
         container.scrollTop = container.scrollHeight;
 
-        setTimeout(() => {
+        try {
+            // REAL BACKEND CALL
+            const response = await fetch('http://127.0.0.1:5000/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: val })
+            });
+
+            const data = await response.json();
+            
             const thinkingEl = document.getElementById(thinkingId);
             if(thinkingEl) thinkingEl.remove();
+
+            // Append response from Python/Gemini
+            container.innerHTML += `<div class="msg bot">${data.reply}</div>`;
             
-            const lowerVal = val.toLowerCase();
-            const reply = responses[lowerVal] || "Consulting Digital Archives... Regarding '" + val + "', I recommend checking the latest notifications on <strong>pib.gov.in</strong> for verified government updates.";
-            
-            container.innerHTML += `<div class="msg bot">${reply}</div>`;
-            container.scrollTop = container.scrollHeight;
-        }, 5000);
+        } catch (error) {
+            const thinkingEl = document.getElementById(thinkingId);
+            if(thinkingEl) thinkingEl.remove();
+            container.innerHTML += `<div class="msg bot"><strong>Error:</strong> Backend unreachable. Please start your Python server.</div>`;
+        }
+        
+        container.scrollTop = container.scrollHeight;
     };
 
     document.addEventListener('keypress', (e) => {
-        if(e.which === 13 && document.activeElement.id === 'bot-query') userSend();
+        if(e.which === 13 && document.activeElement.id === 'bot-query') window.userSend();
     });
 })();

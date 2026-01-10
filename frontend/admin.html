@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expert Dashboard | Digital Integrity Cell</title>
+    <style>
+        :root {
+            --gov-blue: #003366;
+            --gov-blue-light: #00509d;
+            --gov-accent: #f26522;
+            --bg-body: #f8f9fa;
+            --border-color: #dee2e6;
+            --text-main: #212529;
+            --success: #198754;
+            --danger: #dc3545;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", Roboto, sans-serif; }
+        body { background: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; font-size: 14px; }
+
+        /* --- Sidebar Navigation --- */
+        .sidebar { width: 280px; background: #fff; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar-header { padding: 20px; border-bottom: 2px solid var(--gov-blue); background: #fff; }
+        .sidebar-header img { height: 50px; display: block; margin: 0 auto 10px; }
+        .sidebar-header h2 { font-size: 12px; text-align: center; color: var(--gov-blue); text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.4; }
+
+        .nav-menu { flex: 1; padding: 15px 0; }
+        .nav-link { padding: 12px 25px; cursor: pointer; color: #444; border-left: 4px solid transparent; transition: all 0.2s; font-weight: 500; }
+        .nav-link:hover { background: #f0f4f8; color: var(--gov-blue); }
+        .nav-link.active { background: #e7f0f7; color: var(--gov-blue); border-left-color: var(--gov-blue); font-weight: 700; }
+
+        /* --- Main Layout --- */
+        .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .top-bar { height: 60px; background: #fff; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; }
+        .breadcrumb { font-size: 11px; color: #6c757d; text-transform: uppercase; }
+        .user-profile { font-size: 13px; font-weight: 600; color: var(--gov-blue); display: flex; align-items: center; gap: 8px; }
+        .user-profile .role { font-size: 10px; background: #eee; padding: 2px 6px; border-radius: 2px; }
+
+        .container { flex: 1; padding: 25px; overflow-y: auto; }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; animation: fadeIn 0.3s; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* --- News Data Grid --- */
+        .section-title { font-size: 18px; color: var(--gov-blue); margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #ddd; display: flex; align-items: center; gap: 10px; }
+        .grid { display: grid; grid-template-columns: 1fr; gap: 25px; max-width: 900px; }
+        
+        .entry-card { background: #fff; border: 1px solid var(--border-color); border-radius: 2px; display: flex; flex-direction: column; border-left: 4px solid #888; }
+        .card.fake-type { border-left-color: var(--danger); }
+        .card.real-type { border-left-color: var(--success); }
+        
+        .card-header { padding: 12px 15px; background: #fcfcfc; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .id-label { font-size: 11px; font-weight: 700; color: #888; }
+        .type-pill { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 800; text-transform: uppercase; }
+        .pill-misinfo { background: #fff5f5; color: #c00; border: 1px solid #ffc1c1; }
+        .pill-verified { background: #f0fff4; color: #155724; border: 1px solid #c3e6cb; }
+
+        .card-body { padding: 20px; }
+        .headline { font-size: 17px; font-weight: 700; margin-bottom: 12px; color: #000; }
+        .detailed-report { font-size: 13.5px; color: #333; line-height: 1.6; margin-bottom: 20px; }
+
+        .metadata-table { width: 100%; font-size: 12px; border-collapse: collapse; margin-bottom: 15px; }
+        .metadata-table td { padding: 8px; border: 1px solid #f0f0f0; vertical-align: top; }
+        .m-key { width: 30%; background: #fafafa; color: #777; font-weight: 600; text-transform: uppercase; font-size: 10px; }
+        .m-val { color: #333; font-weight: 500; }
+
+        .card-footer { padding: 15px; display: flex; gap: 12px; background: #f8f9fa; border-top: 1px solid #eee; }
+        .btn { flex: 1; padding: 10px; border: 1px solid transparent; border-radius: 2px; font-size: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
+        .btn-green { background: var(--success); color: #fff; }
+        .btn-red { background: #fff; color: var(--danger); border-color: var(--danger); }
+
+        /* --- History Table --- */
+        .history-table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--border-color); }
+        .history-table th { background: var(--gov-blue); color: #fff; text-align: left; padding: 12px; font-size: 11px; text-transform: uppercase; }
+        .history-table td { padding: 12px; border-bottom: 1px solid #eee; font-size: 12.5px; }
+        .status-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 3px; text-transform: uppercase; }
+        .status-pushed { background: #d1e7dd; color: #0f5132; }
+        .status-blocked { background: #f8d7da; color: #842029; }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="India Emblem">
+            <h2>Digital Integrity Cell<br>Bharat Election Portal</h2>
+        </div>
+        <div class="nav-menu">
+            <div class="nav-link active" onclick="switchTab('fake-pane', this)">Pending Verification (Fake)</div>
+            <div class="nav-link" onclick="switchTab('real-pane', this)">Pending Verification (Real)</div>
+            <div class="nav-link" onclick="switchTab('history-pane', this)">Moderation History</div>
+        </div>
+    </nav>
+
+    <div class="main">
+        <header class="top-bar">
+            <div class="breadcrumb">Journalist Expert Workspace > Current Stream: Jan 10, 2026</div>
+            <div class="user-profile">
+                <span class="role">SENIOR VERIFIER</span>
+                EXPERT_MOD_88
+            </div>
+        </header>
+
+        <div class="container">
+            
+            <div id="fake-pane" class="tab-pane active">
+                <h3 class="section-title">New Flags: Potential Disinformation</h3>
+                <div class="grid">
+                    <div class="entry-card card fake-type" id="pending-fake-1">
+                        <div class="card-header">
+                            <span class="id-label">ALERT_REF: #AF-2026-101</span>
+                            <span class="type-pill pill-misinfo">Deepfake Audio</span>
+                        </div>
+                        <div class="card-body">
+                            <h4 class="headline">Viral Audio: Former CM Allegedly Directing BMC Poll Sabotage</h4>
+                            <div class="detailed-report">
+                                An audio clip surfaced on WhatsApp and Telegram groups at 06:15 AM today, purportedly capturing a senior MVA leader instructing local workers to create "EVM chaos" during the Jan 15 local body polls. Initial digital footprint analysis shows the audio was first uploaded via a proxy server in South Asia.
+                            </div>
+                            <table class="metadata-table">
+                                <tr><td class="m-key">Forensic Audit</td><td class="m-val">Morphed/Synthetic. Spectrogram shows frequent frequency gaps typical of AI-generation. Voice sample matches 89% with recent AI-voice clones of the leader.</td></tr>
+                                <tr><td class="m-key">Virality Index</td><td class="m-val">High (40,000+ views in 2 hours across X/Twitter).</td></tr>
+                                <tr><td class="m-key">Verdict Basis</td><td class="m-val">The leader was in a televised public meeting during the alleged call timestamp.</td></tr>
+                            </table>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-green" onclick="logAction('pending-fake-1', 'PUSHED', 'MVA Leader Sabotage Audio')">Approve Alert</button>
+                            <button class="btn btn-red" onclick="logAction('pending-fake-1', 'BLOCKED', 'MVA Leader Sabotage Audio')">Dismiss</button>
+                        </div>
+                    </div>
+
+                    <div class="entry-card card fake-type" id="pending-fake-2">
+                        <div class="card-header">
+                            <span class="id-label">ALERT_REF: #AF-2026-102</span>
+                            <span class="type-pill pill-misinfo">Phishing Phobia</span>
+                        </div>
+                        <div class="card-body">
+                            <h4 class="headline">"ECI Verification" Mandatory Link for 2026 Voters</h4>
+                            <div class="detailed-report">
+                                A misleading SMS campaign targeting voters in poll-bound states (Assam, TN, WB) claims that failing to "verify" via the link provided will lead to immediate deletion of voter names from the Special Intensive Revision (SIR) list.
+                            </div>
+                            <table class="metadata-table">
+                                <tr><td class="m-key">URL Analysis</td><td class="m-val">voter-veri-eci.gov-in.com (Fraudulent). IP points to a hosting provider in Eastern Europe.</td></tr>
+                                <tr><td class="m-key">Intent</td><td class="m-val">Aadhaar/EPIC data harvesting via fake OTP gateway.</td></tr>
+                            </table>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-green" onclick="logAction('pending-fake-2', 'PUSHED', 'Fake Voter Deletion SMS')">Approve Alert</button>
+                            <button class="btn btn-red" onclick="logAction('pending-fake-2', 'BLOCKED', 'Fake Voter Deletion SMS')">Dismiss</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="real-pane" class="tab-pane">
+                <h3 class="section-title">Verified Feed: Official Press Releases</h3>
+                <div class="grid">
+                    <div class="entry-card card real-type" id="pending-real-1">
+                        <div class="card-header">
+                            <span class="id-label">PIB_PUB: #2026-1402</span>
+                            <span class="type-pill pill-verified">Official Facility</span>
+                        </div>
+                        <div class="card-body">
+                            <h4 class="headline">ECI Launches 'Book-a-Call with BLO' Facility</h4>
+                            <div class="detailed-report">
+                                The Election Commission of India has officially launched the "Book-a-Call with BLO" service on the ECINET app. Voters can now schedule calls with their Booth Level Officers (BLO) for real-time guidance on claims/objections during the electoral roll revision.
+                            </div>
+                            <table class="metadata-table">
+                                <tr><td class="m-key">Source</td><td class="m-val">ECI Press Note (Jan 10, 09:02 AM)</td></tr>
+                                <tr><td class="m-key">Context</td><td class="m-val">Aimed at Special Intensive Revision (SIR) for upcoming 2026 State Polls.</td></tr>
+                            </table>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-green" onclick="logAction('pending-real-1', 'PUSHED', 'ECI Book-a-Call BLO')">Approve Release</button>
+                            <button class="btn btn-red" onclick="logAction('pending-real-1', 'BLOCKED', 'ECI Book-a-Call BLO')">Hold</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="history-pane" class="tab-pane">
+                <h3 class="section-title">Moderation History (Jan 01 - Jan 10, 2026)</h3>
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Transaction ID</th>
+                            <th>Date/Time</th>
+                            <th>Entity Headline</th>
+                            <th>Decision</th>
+                            <th>Moderator</th>
+                        </tr>
+                    </thead>
+                    <tbody id="audit-trail">
+                        <tr><td>#TX-1120</td><td>10-Jan 08:30</td><td>8th Pay Commission Implementation Jan 1</td><td><span class="status-badge status-pushed">PUSHED</span></td><td>EXPERT_88</td></tr>
+                        <tr><td>#TX-1119</td><td>10-Jan 07:45</td><td>"EVM Battery Removal" Viral Clip</td><td><span class="status-badge status-blocked">BLOCKED</span></td><td>EXPERT_88</td></tr>
+                        <tr><td>#TX-1118</td><td>09-Jan 18:20</td><td>Sarbananda Sonowal Projects TN (235cr)</td><td><span class="status-badge status-pushed">PUSHED</span></td><td>EXPERT_88</td></tr>
+                        <tr><td>#TX-1117</td><td>09-Jan 15:10</td><td>Fake Railway Recruitment PDF</td><td><span class="status-badge status-blocked">BLOCKED</span></td><td>EXPERT_88</td></tr>
+                        <tr><td>#TX-1116</td><td>09-Jan 11:30</td><td>Maharashtra BMC Polls Jan 15 (BJP-Sena)</td><td><span class="status-badge status-pushed">PUSHED</span></td><td>EXPERT_88</td></tr>
+                        <tr><td>#TX-1115</td><td>09-Jan 09:00</td><td>Winter School Holidays (Cold Wave)</td><td><span class="status-badge status-pushed">PUSHED</span></td><td>EXPERT_88</td></tr>
+                        <tr><td>#TX-1114</td><td>08-Jan 21:05</td><td>Mamata Banerjee Evidence "Theft" Claims</td><td><span class="status-badge status-pushed">PUSHED</span></td><td>EXPERT_88</td></tr>
+                        <tr><td>#TX-1113</td><td>08-Jan 19:15</td><td>Trump-US Exit from ISA Rumors</td><td><span class="status-badge status-pushed">PUSHED</span></td><td>EXPERT_88</td></tr>
+                        <tr><td>#TX-1112</td><td>08-Jan 16:40</td><td>US Tariff "500%" Bill Verification</td><td><span class="status-badge status-pushed">PUSHED</span></td><td>EXPERT_88</td></tr>
+                        <tr><td>#TX-1111</td><td>08-Jan 12:00</td><td>Bomb Threat Eluru/Ananthapur Courts</td><td><span class="status-badge status-pushed">PUSHED</span></td><td>EXPERT_88</td></tr>
+                        <tr><td>#TX-1110</td><td>07-Jan 22:15</td><td>"Jana Nayagan" Film Ban Hoax</td><td><span class="status-badge status-pushed">PUSHED</span></td><td>EXPERT_88</td></tr>
+                        <tr><td>#TX-1109</td><td>07-Jan 17:30</td><td>GDP 7.4% Forecast (Gov Estimates)</td><td><span class="status-badge status-pushed">PUSHED</span></td><td>EXPERT_88</td></tr>
+                        <tr><td>#TX-1108</td><td>07-Jan 13:45</td><td>Lawrence Bishnoi Gang Member Repatriated</td><td><span class="status-badge status-pushed">PUSHED</span></td><td>EXPERT_88</td></tr>
+                        <tr><td>#TX-1107</td><td>06-Jan 18:00</td><td>Bihar Panel: Minorities Mob Lynching</td><td><span class="status-badge status-pushed">PUSHED</span></td><td>EXPERT_88</td></tr>
+                        <tr><td>#TX-1106</td><td>06-Jan 14:10</td><td>Indore Smelly Water Misinfo</td><td><span class="status-badge status-blocked">BLOCKED</span></td><td>EXPERT_88</td></tr>
+                        <tr><td>#TX-1105</td><td>06-Jan 11:00</td><td>Madhya Pradesh e-Cabinet Launch</td><td><span class="status-badge status-pushed">PUSHED</span></td><td>EXPERT_88</td></tr>
+                        <tr><td>#TX-1104</td><td>05-Jan 16:20</td><td>Reliance Russian Oil Shipment Rejection</td><td><span class="status-badge status-pushed">PUSHED</span></td><td>EXPERT_88</td></tr>
+                        <tr><td>#TX-1103</td><td>05-Jan 10:45</td><td>Free Netflix Subscription BJP Call-in</td><td><span class="status-badge status-blocked">BLOCKED</span></td><td>EXPERT_88</td></tr>
+                        <tr><td>#TX-1102</td><td>04-Jan 20:00</td><td>"Modi Dancing" Deepfake Trend</td><td><span class="status-badge status-blocked">BLOCKED</span></td><td>EXPERT_88</td></tr>
+                        <tr><td>#TX-1101</td><td>04-Jan 15:30</td><td>RBI Master Circular: Digital Payments</td><td><span class="status-badge status-pushed">PUSHED</span></td><td>EXPERT_88</td></tr>
+                        <tr><td>#TX-1100</td><td>03-Jan 12:10</td><td>Congress-TVK Possible Alliance TN</td><td><span class="status-badge status-pushed">PUSHED</span></td><td>EXPERT_88</td></tr>
+                        <tr><td>#TX-1099</td><td>02-Jan 14:00</td><td>NIRYAT Support for MSMEs (Jan 1)</td><td><span class="status-badge status-pushed">PUSHED</span></td><td>EXPERT_88</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function switchTab(paneId, element) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.getElementById(paneId).classList.add('active');
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        function logAction(cardId, action, headline) {
+            const card = document.getElementById(cardId);
+            const txnId = "#TX-" + Math.floor(Math.random()*900 + 1200);
+            const time = new Date().toLocaleString('en-IN', { hour12: false, day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+            
+            const tbody = document.getElementById('audit-trail');
+            const row = tbody.insertRow(0);
+            row.innerHTML = `<td>${txnId}</td><td>${time}</td><td>${headline}</td><td><span class="status-badge ${action === 'PUSHED' ? 'status-pushed' : 'status-blocked'}">${action}</span></td><td>EXPERT_88</td>`;
+
+            card.style.opacity = "0.5";
+            card.style.pointerEvents = "none";
+            setTimeout(() => card.remove(), 600);
+        }
+    </script>
+</body>
+</html>
