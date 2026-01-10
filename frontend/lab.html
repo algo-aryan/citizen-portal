@@ -395,73 +395,92 @@
     const fileInput = document.getElementById('file-input');
     let selectedFile = null;
 
-    // Handshake logic with retry mechanism
+    // Handshake logic to pull shared image data from Android
     async function initHandshake() {
-        const checkBridge = async (retries = 5) => {
-            if (window.AndroidBridge && typeof window.AndroidBridge.getPendingImage === 'function') {
-                const sharedUri = window.AndroidBridge.getPendingImage();
-                if (sharedUri) {
-                    await processSharedImage(sharedUri);
+        const checkBridge = async (retries = 10) => {
+            // Check if the Java bridge is registered
+            if (window.AndroidBridge && typeof window.AndroidBridge.getPendingImageData === 'function') {
+                const base64Data = window.AndroidBridge.getPendingImageData();
+                const mimeType = window.AndroidBridge.getPendingMimeType();
+                
+                if (base64Data && mimeType) {
+                    await processSharedImage(base64Data, mimeType);
+                    // Clear data in Java to prevent reloading on simple page refreshes
+                    window.AndroidBridge.clearPendingImage(); 
                 }
             } else if (retries > 0) {
-                // Wait 100ms and try again if bridge isn't ready yet
-                setTimeout(() => checkBridge(retries - 1), 100);
+                // Wait 200ms and try again if bridge isn't ready yet
+                setTimeout(() => checkBridge(retries - 1), 200);
             }
         };
         await checkBridge();
     }
 
-    // Run on load
+    // Run on window load
     window.addEventListener('load', initHandshake);
 
-    async function processSharedImage(uri) {
+    async function processSharedImage(base64, mime) {
         const fileNameDisplay = document.getElementById('file-name');
         const scanImg = document.getElementById('scan-img');
 
         try {
-            fileNameDisplay.innerText = "Importing evidence...";
+            fileNameDisplay.innerText = "Securing shared evidence...";
             
-            // Set source for preview
-            scanImg.src = uri;
+            // 1. Convert Base64 string back to binary data
+            const byteCharacters = atob(base64);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: mime });
 
-            // 1. Fetch the image data from the Android Content URI
-            const response = await fetch(uri);
-            const blob = await response.blob();
+            // 2. Create a real File object
+            const file = new File([blob], "shared_evidence.jpg", { type: mime });
             
-            // 2. Create a real File object for the neural scan engine
-            const file = new File([blob], "shared_evidence.jpg", { type: blob.type || "image/jpeg" });
+            // 3. Update the visual preview immediately
+            const reader = new FileReader();
+            reader.onload = (e) => { 
+                scanImg.src = e.target.result; 
+            };
+            reader.readAsDataURL(file);
 
-            // 3. Assign to global variable and simulate input selection
+            // 4. CRITICAL: Automatically upload into the hidden form input
             selectedFile = file;
-            
             const dataTransfer = new DataTransfer();
             dataTransfer.items.add(file);
             fileInput.files = dataTransfer.files;
 
+            // Update UI feedback
             fileNameDisplay.innerText = "Evidence Secured: Ready for Scan";
             fileNameDisplay.style.color = 'var(--live-green)';
             
-            console.log("Shared file successfully bound to form.");
+            console.log("Shared image successfully injected into form.");
         } catch (e) {
             console.error("Auto-import failed", e);
-            fileNameDisplay.innerText = "Security block: Cannot read shared file";
+            fileNameDisplay.innerText = "Security block: Import manually";
             fileNameDisplay.style.color = 'var(--alert-red)';
         }
     }
 
-    // Manual upload fallback
+    // Manual upload fallback (remains unchanged)
     fileInput.onchange = (e) => {
         if(e.target.files.length > 0) {
             selectedFile = e.target.files[0];
             document.getElementById('file-name').innerText = selectedFile.name;
             document.getElementById('file-name').style.color = 'var(--gov-accent)';
+            
+            // Update preview for manual selection as well
+            const reader = new FileReader();
+            reader.onload = (img) => { document.getElementById('scan-img').src = img.target.result; };
+            reader.readAsDataURL(selectedFile);
         }
     };
 
     function startScan() {
         const text = document.getElementById('claim-text').value;
         
-        // Final validation
+        // Validation
         if(!text.trim()) {
             alert("Please provide the claim context for analysis.");
             return;
@@ -471,13 +490,9 @@
             return;
         }
 
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            document.getElementById('scan-img').src = e.target.result;            
-            showStep(2);
-            runTimeline();
-        };
-        reader.readAsDataURL(selectedFile);
+        // Proceed to scanning animation (Step 2)
+        showStep(2);
+        runTimeline();
     }
 
     function showStep(s) {
@@ -509,7 +524,6 @@
         setTimeout(() => showStep(3), 16000);
     }
 </script>
-
 
 <script src="chatbot.js"></script>
 
