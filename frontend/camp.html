@@ -400,104 +400,107 @@
             ];
 
             // --- DOM ELEMENTS ---
-            const viewList = document.getElementById('view-list');
-            const viewDetail = document.getElementById('view-detail');
-            const partyListRoot = document.getElementById('party-list-root');
-            const downloadBtn = document.getElementById('download-trigger-btn');
+            // --- DOM ELEMENTS ---
+    const viewList = document.getElementById('view-list');
+    const viewDetail = document.getElementById('view-detail');
+    const partyListRoot = document.getElementById('party-list-root');
+    const downloadBtn = document.getElementById('download-trigger-btn');
 
-            // --- RENDER PARTY LIST ---
-            function renderList() {
-                partyListRoot.innerHTML = '';
-                parties.forEach(party => {
-                    const card = document.createElement('div');
-                    card.className = 'party-card-item';
-                    card.onclick = () => openDetail(party);
-                    
-                    card.innerHTML = `
-                        <div class="party-info-left">
-                            <img src="${party.logo}" alt="${party.id}" class="list-logo">
-                            <div>
-                                <span class="list-name">${party.name}</span>
-                                <span class="list-leader">${party.leader}</span>
-                            </div>
-                        </div>
-                        <div class="arrow-icon">›</div>
-                    `;
-                    partyListRoot.appendChild(card);
-                });
-            }
+    let activePdfPath = "";
 
-            // --- OPEN DETAIL VIEW ---
-            function openDetail(party) {
-                // 1. Push state to history so mobile back button works
-                history.pushState({ view: 'detail' }, '', '#detail');
-
-                const detailScrollArea = viewDetail.querySelector('.detail-scroll-area');
-                
-                // Inject Government Style Layout (No UI Back Button)
-                detailScrollArea.innerHTML = `
-                    <div class="party-hero-image" style="background-image: url('${party.heroImage}');">
-                        <div class="party-hero-overlay">
-                            <h1>${party.name}</h1>
-                            <span class="party-slogan">"${party.slogan}"</span>
-                        </div>
+    // --- RENDER PARTY LIST ---
+    function renderList() {
+        partyListRoot.innerHTML = '';
+        parties.forEach(party => {
+            const card = document.createElement('div');
+            card.className = 'party-card-item';
+            card.onclick = () => openDetail(party);
+            
+            card.innerHTML = `
+                <div class="party-info-left">
+                    <img src="${party.logo}" alt="${party.id}" class="list-logo">
+                    <div>
+                        <span class="list-name">${party.name}</span>
+                        <span class="list-leader">${party.leader}</span>
                     </div>
-
-                    <div class="detail-content">
-                        <span class="gov-section-label">Campaign Brief</span>
-                        <div class="gov-info-card">
-                            ${party.description}
-                        </div>
-
-                        <span class="gov-section-label">Key Promises</span>
-                        <div class="gov-agenda-list">
-                            ${party.promises.map(p => `
-                                <div class="gov-agenda-item">
-                                    <div class="agenda-icon-box">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                                        </svg>
-                                    </div>
-                                    <span class="agenda-text">${p}</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-
-                // Connect Download Button
-                downloadBtn.onclick = () => handleManifestoDownload("Manifesto_English_f981dc12cc.pdf");
-
-                // Transition
-                viewList.classList.add('hidden');
-                viewDetail.classList.remove('hidden');
-                window.scrollTo(0, 0);
-            }
-
-            // --- HANDLE HISTORY / MOBILE BACK BUTTON ---
-            window.addEventListener('popstate', (event) => {
-                // If we pop back to the list state (null or empty), hide detail
-                if (!event.state || event.state.view !== 'detail') {
-                    viewDetail.classList.add('hidden');
-                    viewList.classList.remove('hidden');
-                }
-            });
-
-            // --- DOWNLOAD HANDLER ---
-            function handleManifestoDownload(filename) {
-                const link = document.createElement('a');
-                link.href = filename;
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
-
-            // Init App
-            // Set initial state so popstate logic works correctly
-            history.replaceState({ view: 'list' }, '', '');
-            renderList();
+                </div>
+                <div class="arrow-icon">›</div>
+            `;
+            partyListRoot.appendChild(card);
         });
+    }
+
+    // --- OPEN DETAIL VIEW ---
+    function openDetail(party) {
+        history.pushState({ view: 'detail' }, '', '#detail');
+
+        // Logic for PDF mapping (manifesto folder)
+        const folder = "manifesto/";
+        let fileName = "bjp.pdf"; // Default fallback
+
+        if (party.id === 'aap') fileName = "aap.pdf";
+        else if (party.id === 'bjp') fileName = "bjp.pdf";
+        else if (party.id === 'inc') fileName = "inc.pdf";
+        
+        activePdfPath = folder + fileName;
+
+        const detailScrollArea = viewDetail.querySelector('.detail-scroll-area');
+        detailScrollArea.innerHTML = `
+            <div class="party-hero-image" style="background-image: url('${party.heroImage}');">
+                <div class="party-hero-overlay">
+                    <h1>${party.name}</h1>
+                    <span class="party-slogan">"${party.slogan}"</span>
+                </div>
+            </div>
+
+            <div class="detail-content">
+                <span class="gov-section-label">Campaign Brief</span>
+                <div class="gov-info-card">
+                    ${party.description}
+                </div>
+
+                <span class="gov-section-label">Key Promises</span>
+                <div class="gov-agenda-list">
+                    ${party.promises.map(p => `
+                        <div class="gov-agenda-item">
+                            <div class="agenda-icon-box">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                                </svg>
+                            </div>
+                            <span class="agenda-text">${p}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+
+        // Transition
+        viewList.classList.add('hidden');
+        viewDetail.classList.remove('hidden');
+        window.scrollTo(0, 0);
+    }
+
+    // --- DOWNLOAD HANDLER ---
+    // Using window.location.href is best for Android WebView DownloadListener
+    downloadBtn.onclick = () => {
+        if (activePdfPath) {
+            window.location.href = activePdfPath;
+        }
+    };
+
+    // --- HANDLE HISTORY / MOBILE BACK BUTTON ---
+    window.addEventListener('popstate', (event) => {
+        if (!event.state || event.state.view !== 'detail') {
+            viewDetail.classList.add('hidden');
+            viewList.classList.remove('hidden');
+        }
+    });
+
+    // Init App
+    history.replaceState({ view: 'list' }, '', '');
+    renderList();
+});
     </script>
     <script src="chatbot.js"></script>
 
