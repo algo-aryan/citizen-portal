@@ -63,6 +63,21 @@ PRIVACY:
 Your goal is to empower voters with knowledge, not influence them.
 """
 
+# --- HELPER: Extract Grounding Link ---
+def extract_grounding_link(response):
+    """Deeply parses Gemini response to find the primary source URL."""
+    try:
+        metadata = response.candidates[0].grounding_metadata
+        if metadata and metadata.grounding_chunks:
+            for chunk in metadata.grounding_chunks:
+                if chunk.web and chunk.web.uri:
+                    return chunk.web.uri
+        if metadata and metadata.search_entry_point:
+            return "Official Records found (Refer to reasoning)"
+    except Exception:
+        pass
+    return "Not Found"
+
 # --- 1. CIVIC CHAT ENDPOINT ---
 @app.route('/chat', methods=['POST'])
 def handle_chat():
@@ -96,13 +111,15 @@ def analyze_media():
         return _build_cors_preflight_response()
 
     try:
-        text_claim = request.form.get('text', '')
-        image_file = request.files.get('image', None) # Default to None
+        # 400 FIX: Use .get() to safely check for optional text/image
+        text_claim = request.form.get('text', '').strip()
+        image_file = request.files.get('image') # Safely returns None if not present
 
-        vlm_analysis = "No image provided."
-        search_context = "No text claim provided."
+        vlm_analysis = "Visual analysis skipped (No image)."
+        search_context = "Grounding skipped (No text)."
+        actual_source_link = "Not Found"
 
-        # CASE 1: IMAGE PROCESSING (Only if file exists)
+        # CASE 1: IMAGE PROCESSING
         if image_file and image_file.filename != '':
             temp_path = "temp_analysis.png"
             image_file.save(temp_path)
@@ -110,51 +127,34 @@ def analyze_media():
             
             vlm_res = client.models.generate_content(
                 model="gemini-2.0-flash", 
-                contents=[img, "Forensic check: Is this AI-generated, a deepfake, or an authentic photo? Look for GAN artifacts."]
+                contents=[img, "Forensic check: Is this image authentic, or does it show AI artifacts/deepfake signs? Provide a technical summary."]
             )
             vlm_analysis = vlm_res.text
 
-        # CASE 2: SEARCH/FACT-CHECK (Only if text exists)
-        actual_source_link = "Not Found"
+        # CASE 2: SEARCH/FACT-CHECK
         if text_claim:
             search_tool = types.Tool(google_search=types.GoogleSearch())
             search_res = client.models.generate_content(
                 model="gemini-2.0-flash",
-                contents=f"Fact check this claim: {text_claim}. Context from image scan: {vlm_analysis}. Provide the specific URL of a news report or official source verifying/debunking this.",
+                contents=f"Fact check this: {text_claim}. Use these visual forensic results as context: {vlm_analysis}. Find the primary source.",
                 config=types.GenerateContentConfig(tools=[search_tool])
             )
             search_context = search_res.text
-            
-            # Extract the actual URL from grounding if available
-            # This is more reliable than the AI 'remembering' the link
-            if hasattr(search_res, 'candidates') and search_res.candidates[0].grounding_metadata:
-                metadata = search_res.candidates[0].grounding_metadata
-                if metadata.search_entry_point:
-                    # Fallback to the search entry point if no direct link
-                    actual_source_link = "See Google Search Results via Lab Report" 
-                if metadata.grounding_chunks:
-                    # Try to get the first real web link
-                    for chunk in metadata.grounding_chunks:
-                        if chunk.web:
-                            actual_source_link = chunk.web.uri
-                            break
+            # SOURCE FIX: Extract the actual URI from grounding metadata
+            actual_source_link = extract_grounding_link(search_res)
 
         # FINAL SYNTHESIS
         final_prompt = f"""
         Evidence: {search_context}
         Visual: {vlm_analysis}
-        Retrieved Source: {actual_source_link}
+        Source Link: {actual_source_link}
         
-        Task: Create a JSON report.
-        Instructions: 
-        1. If 'Retrieved Source' is a URL, use it in the "sources" field. 
-        2. If 'Retrieved Source' is 'Not Found', look through the Evidence text and find a real link. 
-        3. If absolutely no link exists, only then use 'Not Found'.
+        Instructions: Generate a JSON report. If 'Source Link' is a URL, use it in "sources".
+        Return ONLY valid JSON.
 
-        Return ONLY JSON:
         {{
           "verdict": "FACT/FAKE/UNVERIFIED",
-          "reasoning": "2 sentences.",
+          "reasoning": "2 sentences explaining the final conclusion.",
           "sources": "{actual_source_link}",
           "confidence": "HIGH/MEDIUM/LOW",
           "type": "Deepfake/Authentic/Misleading/AI Generated"
@@ -165,14 +165,20 @@ def analyze_media():
         
         # Clean and parse JSON
         raw_text = verdict_res.text.strip()
-        if "```json" in raw_text:
+        if raw_text.startswith("```json"):
             raw_text = raw_text.split("```json")[1].split("```")[0].strip()
+        elif raw_text.startswith("```"):
+            raw_text = raw_text.split("```")[1].split("```")[0].strip()
             
         return jsonify(json.loads(raw_text))
 
     except Exception as e:
-        print(f"Error: {e}")
-        return jsonify({"verdict": "ERROR", "reasoning": "System failed to process partial input.", "sources": "Not Found"}), 500
+        print(f"Forensic Error: {e}")
+        return jsonify({
+            "verdict": "ERROR", 
+            "reasoning": f"Analysis failed: {str(e)}", 
+            "sources": "Not Found"
+        }), 500
 
 def _build_cors_preflight_response():
     response = make_response()
@@ -183,6 +189,5 @@ def _build_cors_preflight_response():
 
 
 if __name__ == '__main__':
-    # Render provides the PORT environment variable
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
