@@ -327,16 +327,25 @@ notices.forEach(notice => {
     card.className = 'notice-card';
     card.innerHTML = `
         <div class="card-main">
-            <div class="content-box">
-                <span class="doc-category">${notice.category}</span>
-                <span class="doc-name">${notice.name}</span>
-                <div class="actions">
-                    <a href="${viewerUrl}" target="_blank" class="btn btn-primary">VIEW</a>
+                <div class="meta-box">
+                    <span class="date-day">${notice.day}</span>
+                    <span class="date-month">${notice.month} ${notice.year}</span>
+                </div>
+                <div class="content-box">
+                    <span class="doc-category">${notice.category}</span>
+                    <span class="doc-name">${notice.name}</span>
+                    <div class="actions">
+                                            <a href="${viewerUrl}" target="_blank" class="btn btn-primary">VIEW</a>
                     
                     <a href="${pdfUrl}" download="Notice.pdf" class="btn btn-outline">DOWNLOAD</a>
+                    </div>
                 </div>
             </div>
-        </div>
+            <div class="summary-box">
+                <ul>
+                    ${notice.summary.map(point => `<li>${point}</li>`).join('')}
+                </ul>
+            </div>
         `;
     container.appendChild(card);
 });
