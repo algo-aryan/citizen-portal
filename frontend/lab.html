@@ -351,7 +351,7 @@
         </div>
 
         <div class="sticky-footer">
-            <button class="primary-btn" onclick="startScan()">Execute Neural Scan</button>
+            <button type="button" class="primary-btn" onclick="startScan(event)">Execute Neural Scan</button>
         </div>
     </div>
 
@@ -370,18 +370,18 @@
     </div>
 
     <div id="step-3" class="step-view">
-        <div class="verdict-header">Manipulated Media Detected</div>
+        <div id="verdict-banner" class="verdict-header"></div>
         <div class="scroll-content" style="padding: 0;">
             <div style="height: 200px; background: #000;">
-                <img id="res-img" src="10_df.png" style="width:100%; height:100%; object-fit:contain;">
+                <img id="res-img" src="" style="width:100%; height:100%; object-fit:contain;">
             </div>
             <table class="data-table">
-                <tr><td class="lbl">AI Confidence</td><td class="val">99.82% Artificial</td></tr>
-                <tr><td class="lbl">Forgery Type</td><td class="val">GAN Generation</td></tr>
-                <tr><td class="lbl">Source Record</td><td class="val" style="color:var(--alert-red)">NOT FOUND</td></tr>
+                <tr><td class="lbl">Analysis Score</td><td id="conf-val" class="val">--</td></tr>
+                <tr><td class="lbl">Verdict</td><td id="type-val" class="val">--</td></tr>
+                <tr><td class="lbl">Source Record</td><td id="source-val" class="val">--</td></tr>
             </table>
-            <div class="advisory">
-                <strong>OFFICIAL ADVISORY:</strong> Digital forensics confirms significant pixel manipulation in the facial region. This content does not match any official government archives. <strong>Caution: Do not circulate.</strong>
+            <div id="advisory-text" class="advisory">
+                <strong>OFFICIAL ADVISORY:</strong> Initializing analysis...
             </div>
         </div>
         <div class="sticky-footer">
@@ -395,28 +395,43 @@
     const fileInput = document.getElementById('file-input');
     let selectedFile = null;
 
-    // Handshake logic to pull shared image data from Android
-    async function initHandshake() {
-        const checkBridge = async (retries = 10) => {
-            // Check if the Java bridge is registered
-            if (window.AndroidBridge && typeof window.AndroidBridge.getPendingImageData === 'function') {
-                const base64Data = window.AndroidBridge.getPendingImageData();
-                const mimeType = window.AndroidBridge.getPendingMimeType();
-                
-                if (base64Data && mimeType) {
-                    await processSharedImage(base64Data, mimeType);
-                    // Clear data in Java to prevent reloading on simple page refreshes
-                    window.AndroidBridge.clearPendingImage(); 
-                }
-            } else if (retries > 0) {
-                // Wait 200ms and try again if bridge isn't ready yet
-                setTimeout(() => checkBridge(retries - 1), 200);
-            }
-        };
-        await checkBridge();
+    // --- 1. Navigation Helper (The missing function) ---
+    function showStep(s) {
+        document.querySelectorAll('.step-view').forEach(el => el.classList.remove('active'));
+        const targetStep = document.getElementById('step-' + s);
+        if (targetStep) targetStep.classList.add('active');
     }
 
-    // Run on window load
+    // --- 2. Handshake logic for Android Bridge ---
+    async function initHandshake() {
+    const startTime = Date.now();
+    const timeout = 2000; // 2 seconds timeout for browser testing
+
+    const checkBridge = async () => {
+        // 1. Check if we are inside the Android App
+        if (window.AndroidBridge && typeof window.AndroidBridge.getPendingImageData === 'function') {
+            console.log("Android Bridge detected. Importing shared data...");
+            const base64Data = window.AndroidBridge.getPendingImageData();
+            const mimeType = window.AndroidBridge.getPendingMimeType();
+            
+            if (base64Data && mimeType) {
+                await processSharedImage(base64Data, mimeType);
+                window.AndroidBridge.clearPendingImage(); 
+            }
+        } 
+        // 2. If not found yet, retry until timeout
+        else if (Date.now() - startTime < timeout) {
+            setTimeout(checkBridge, 200);
+        } 
+        // 3. Fallback for Desktop Browser testing
+        else {
+            console.log("Running in Browser mode (No Android Bridge).");
+            document.getElementById('file-name').innerText = "System Ready: Upload Evidence";
+        }
+    };
+    await checkBridge();
+}
+
     window.addEventListener('load', initHandshake);
 
     async function processSharedImage(base64, mime) {
@@ -425,8 +440,6 @@
 
         try {
             fileNameDisplay.innerText = "Securing shared evidence...";
-            
-            // 1. Convert Base64 string back to binary data
             const byteCharacters = atob(base64);
             const byteNumbers = new Array(byteCharacters.length);
             for (let i = 0; i < byteCharacters.length; i++) {
@@ -434,94 +447,132 @@
             }
             const byteArray = new Uint8Array(byteNumbers);
             const blob = new Blob([byteArray], { type: mime });
-
-            // 2. Create a real File object
             const file = new File([blob], "shared_evidence.jpg", { type: mime });
             
-            // 3. Update the visual preview immediately
             const reader = new FileReader();
-            reader.onload = (e) => { 
-                scanImg.src = e.target.result; 
-            };
+            reader.onload = (e) => { scanImg.src = e.target.result; };
             reader.readAsDataURL(file);
 
-            // 4. CRITICAL: Automatically upload into the hidden form input
             selectedFile = file;
             const dataTransfer = new DataTransfer();
             dataTransfer.items.add(file);
             fileInput.files = dataTransfer.files;
 
-            // Update UI feedback
             fileNameDisplay.innerText = "Evidence Secured: Ready for Scan";
             fileNameDisplay.style.color = 'var(--live-green)';
-            
-            console.log("Shared image successfully injected into form.");
         } catch (e) {
             console.error("Auto-import failed", e);
-            fileNameDisplay.innerText = "Security block: Import manually";
-            fileNameDisplay.style.color = 'var(--alert-red)';
         }
     }
 
-    // Manual upload fallback (remains unchanged)
     fileInput.onchange = (e) => {
         if(e.target.files.length > 0) {
             selectedFile = e.target.files[0];
             document.getElementById('file-name').innerText = selectedFile.name;
             document.getElementById('file-name').style.color = 'var(--gov-accent)';
-            
-            // Update preview for manual selection as well
             const reader = new FileReader();
             reader.onload = (img) => { document.getElementById('scan-img').src = img.target.result; };
             reader.readAsDataURL(selectedFile);
         }
     };
 
-    function startScan() {
-        const text = document.getElementById('claim-text').value;
-        
-        // Validation
-        if(!text.trim()) {
-            alert("Please provide the claim context for analysis.");
-            return;
-        }
-        if(!selectedFile) {
-            alert("No media detected. Please upload or share an image.");
-            return;
-        }
+    // --- 3. Main Logic: Sending data to Backend ---
+    async function startScan(event) {
+    if (event) event.preventDefault();
 
-        // Proceed to scanning animation (Step 2)
-        showStep(2);
-        runTimeline();
+    const text = document.getElementById('claim-text').value;
+    if(!text.trim() || !selectedFile) {
+        alert("Please provide a claim and an image.");
+        return;
     }
 
-    function showStep(s) {
-        document.querySelectorAll('.step-view').forEach(el => el.classList.remove('active'));
-        document.getElementById('step-' + s).classList.add('active');
-    }
+    // Step 2: Show Scanning UI
+    showStep(2);
+    const animationPromise = runTimeline();
 
-    function runTimeline() {
-        const timeline = [
-            { id: 'p0', delay: 2000 },
-            { id: 'p1', delay: 7200 },
-            { id: 'p2', delay: 11000 },
-            { id: 'p3', delay: 15000 }
-        ];
+    const formData = new FormData();
+    formData.append('text', text);
+    formData.append('image', selectedFile);
 
-        timeline.forEach((item, idx) => {
-            setTimeout(() => {
-                const el = document.getElementById(item.id);
-                if (el) {
-                    el.classList.add('active');
-                    if(idx > 0) {
-                        const prevEl = document.getElementById(timeline[idx-1].id);
-                        if (prevEl) prevEl.classList.replace('active', 'done');
-                    }
-                }
-            }, item.delay);
+    try {
+        // Use 127.0.0.1 if running browser on same Mac, 
+        // OR use the 10.128.x.x IP if testing on another device.
+        const response = await fetch('http://127.0.0.1:5000/analyze-media', {
+            method: 'POST',
+            mode: 'cors',
+            body: formData
         });
 
-        setTimeout(() => showStep(3), 16000);
+        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+        
+        const data = await response.json();
+        
+        // Wait for scan animation to reach minimum time
+        await animationPromise;
+
+        // Map data to UI
+        populateResults(data);
+        showStep(3);
+
+    } catch (error) {
+        console.error("Link Error:", error);
+        alert("Connection Failed. Ensure app.py is running on port 5000.");
+        showStep(1);
+    }
+}
+
+function populateResults(data) {
+    const header = document.querySelector('.verdict-header');
+    const resImg = document.getElementById('res-img');
+    const advisory = document.querySelector('.advisory');
+    const tableVals = document.querySelectorAll('.val');
+
+    const isFake = data.verdict === 'FAKE';
+    header.innerText = isFake ? "Manipulated Media Detected" : "Verified Authentic Content";
+    header.style.background = isFake ? "var(--alert-red)" : "var(--live-green)";
+
+    // Use original image
+    resImg.src = document.getElementById('scan-img').src;
+
+    // --- UPDATED LOGIC FOR STRICT CLASSIFICATION ---
+    let scoreDisplay = data.confidence;
+    // Safety check: if backend sends a number, convert it to words
+    if (!isNaN(parseFloat(scoreDisplay))) {
+        let num = parseFloat(scoreDisplay);
+        if (num >= 80) scoreDisplay = "HIGH";
+        else if (num >= 40) scoreDisplay = "MEDIUM";
+        else scoreDisplay = "LOW";
+    }
+    tableVals[0].innerText = scoreDisplay || "N/A"; 
+    // -----------------------------------------------
+
+    tableVals[1].innerText = data.type || "Analysis Complete";
+    tableVals[2].innerText = data.sources || "Not Found";
+    tableVals[2].style.color = isFake ? "var(--alert-red)" : "var(--live-green)";
+
+    // Footer
+    advisory.innerHTML = `<strong>OFFICIAL ANALYSIS:</strong> ${data.reasoning} <br><br><strong>Source:</strong> ${data.sources}`;
+}
+
+    function runTimeline() {
+        return new Promise((resolve) => {
+            const delays = [500, 2500, 4500, 6500];
+            const ids = ['p0', 'p1', 'p2', 'p3'];
+
+            ids.forEach((id, idx) => {
+                setTimeout(() => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.classList.add('active');
+                        if(idx > 0) {
+                            const prev = document.getElementById(ids[idx-1]);
+                            if (prev) prev.classList.replace('active', 'done');
+                        }
+                    }
+                    if(idx === ids.length - 1) resolve();
+                }, delays[idx]);
+            });
+        });
     }
 </script>
 
