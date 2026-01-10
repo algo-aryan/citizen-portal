@@ -395,6 +395,7 @@
     const fileInput = document.getElementById('file-input');
     let selectedFile = null;
 
+    // Standard manual upload
     fileInput.onchange = (e) => {
         if(e.target.files.length > 0) {
             selectedFile = e.target.files[0];
@@ -402,6 +403,39 @@
             document.getElementById('file-name').style.color = 'var(--gov-accent)';
         }
     };
+
+    // HANDSHAKE LOGIC: Pull shared image on load
+    document.addEventListener('DOMContentLoaded', async () => {
+        if (window.AndroidBridge && window.AndroidBridge.getPendingImage) {
+            const uri = window.AndroidBridge.getPendingImage();
+            if (uri) {
+                await processSharedImage(uri);
+            }
+        }
+    });
+
+    async function processSharedImage(uri) {
+        const fileNameDisplay = document.getElementById('file-name');
+        const scanImg = document.getElementById('scan-img');
+
+        try {
+            fileNameDisplay.innerText = "Importing shared evidence...";
+            scanImg.src = uri;
+
+            // Fetch binary data from URI
+            const response = await fetch(uri);
+            const blob = await response.blob();
+            
+            // Populate the global variable used by startScan()
+            selectedFile = new File([blob], "shared_evidence.jpg", { type: blob.type || "image/jpeg" });
+
+            fileNameDisplay.innerText = "Evidence Secured: Ready for Scan";
+            fileNameDisplay.style.color = 'var(--live-green)';
+        } catch (e) {
+            console.error("Auto-import failed", e);
+            fileNameDisplay.innerText = "Error importing shared file";
+        }
+    }
 
     function startScan() {
         const text = document.getElementById('claim-text').value;
@@ -442,38 +476,6 @@
 
         setTimeout(() => showStep(3), 16000);
     }
-
-    // This listener handles the data sent from the Java code
-window.addEventListener('appShareImage', async (event) => {
-    const sharedUri = event.detail.uri;
-    const fileNameDisplay = document.getElementById('file-name');
-    const scanImg = document.getElementById('scan-img');
-
-    if (!sharedUri) return;
-
-    try {
-        // 1. Visually update the UI
-        fileNameDisplay.innerText = "Processing shared image...";
-        fileNameDisplay.style.color = 'var(--gov-accent)';
-        scanImg.src = sharedUri;
-
-        // 2. IMPORTANT: Convert the URI to a real File object for the scan logic
-        const response = await fetch(sharedUri);
-        const blob = await response.blob();
-        
-        // This is the variable your existing code uses:
-        selectedFile = new File([blob], "shared_evidence.jpg", { type: blob.type || "image/jpeg" });
-
-        // 3. Final UI Update
-        fileNameDisplay.innerText = "Shared Image Ready for Scan";
-        fileNameDisplay.style.color = 'var(--live-green)';
-        
-    } catch (error) {
-        console.error("Shared image processing failed:", error);
-        fileNameDisplay.innerText = "Error loading shared image";
-        fileNameDisplay.style.color = 'var(--alert-red)';
-    }
-});
 </script>
 
 <script src="chatbot.js"></script>

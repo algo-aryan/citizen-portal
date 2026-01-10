@@ -20,6 +20,8 @@
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBarLaunch"
             android:launchMode="singleTask"
+            android:taskAffinity=""
+            android:alwaysRetainTaskState="true"
             android:exported="true">
 
             <intent-filter>
@@ -32,7 +34,6 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="image/*" />
             </intent-filter>
-
         </activity>
 
         <provider

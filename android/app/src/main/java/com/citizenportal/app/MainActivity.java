@@ -8,20 +8,24 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.webkit.CookieManager;
 import android.webkit.DownloadListener;
+import android.webkit.JavascriptInterface;
 import android.webkit.URLUtil;
 import android.webkit.WebView;
-import android.webkit.WebViewClient; // Ensure this is imported
 import android.widget.Toast;
-
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
     
-    private String lastSharedUri = null;
+    private String sharedImageUri = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        // Setup the Bridge Interface
+        WebView webView = this.getBridge().getWebView();
+        webView.addJavascriptInterface(new WebAppInterface(), "AndroidBridge");
+        
         handleIncomingShare(getIntent());
     }
 
@@ -33,31 +37,25 @@ public class MainActivity extends BridgeActivity {
     }
 
     private void handleIncomingShare(Intent intent) {
-        String action = intent.getAction();
-        String type = intent.getType();
-
-        if (Intent.ACTION_SEND.equals(action) && type != null && type.startsWith("image/")) {
-            Uri imageUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
-            if (imageUri != null) {
-                lastSharedUri = imageUri.toString();
-                
-                // 1. Force the WebView to navigate to the Lab page
-                // Assuming lab.html is in your web assets root
-                this.getBridge().getWebView().loadUrl("file:///android_asset/public/lab.html");
-
-                // 2. Inject a listener that fires when the page FINISHES loading
-                this.getBridge().getWebView().setWebViewClient(new WebViewClient() {
-                    @Override
-                    public void onPageFinished(WebView view, String url) {
-                        super.onPageFinished(view, url);
-                        if (url.contains("lab.html") && lastSharedUri != null) {
-                            String jsCode = "window.dispatchEvent(new CustomEvent('appShareImage', { detail: { uri: '" + lastSharedUri + "' } }));";
-                            view.evaluateJavascript(jsCode, null);
-                            lastSharedUri = null; // Clear it so it doesn't fire twice
-                        }
-                    }
-                });
+        if (Intent.ACTION_SEND.equals(intent.getAction()) && intent.getType() != null) {
+            if (intent.getType().startsWith("image/")) {
+                Uri imageUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
+                if (imageUri != null) {
+                    sharedImageUri = imageUri.toString();
+                    // Redirect immediately to the forensic lab
+                    this.getBridge().getWebView().loadUrl("file:///android_asset/public/lab.html");
+                }
             }
+        }
+    }
+
+    // HANDSHAKE INTERFACE: JavaScript calls this to get the URI
+    public class WebAppInterface {
+        @JavascriptInterface
+        public String getPendingImage() {
+            String temp = sharedImageUri;
+            sharedImageUri = null; // Reset after delivery
+            return temp;
         }
     }
 
