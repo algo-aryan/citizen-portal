@@ -495,30 +495,29 @@
     formData.append('image', selectedFile);
 
     try {
-        // Use 127.0.0.1 if running browser on same Mac, 
-        // OR use the 10.128.x.x IP if testing on another device.
-        const response = await fetch('https://bharat-mat.onrender.com/analyze-media', {
-            method: 'POST',
-            mode: 'cors',
-            body: formData
-        });
+    const response = await fetch('https://bharat-mat.onrender.com/analyze-media', {
+        method: 'POST',
+        mode: 'cors',
+        body: formData
+    });
 
-        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-        
-        const data = await response.json();
-        
-        // Wait for scan animation to reach minimum time
-        await animationPromise;
-
-        // Map data to UI
-        populateResults(data);
-        showStep(3);
-
-    } catch (error) {
-        console.error("Link Error:", error);
-        alert("Connection Failed. Ensure app.py is running on port 5000.");
-        showStep(1);
+    if (!response.ok) {
+        // This will tell us if it's a 404, 500, or 503 error
+        const errorData = await response.text(); 
+        throw new Error(`Server Error: ${response.status} - ${errorData}`);
     }
+    
+    const data = await response.json();
+    await animationPromise;
+    populateResults(data);
+    showStep(3);
+
+} catch (error) {
+    console.error("Link Error:", error);
+    // CHANGE THIS LINE to see the actual error on your mobile screen
+    alert("Analysis Failed: " + error.message); 
+    showStep(1);
+}
 }
 
 function populateResults(data) {
