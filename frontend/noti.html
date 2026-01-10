@@ -332,21 +332,30 @@
 
     const container = document.getElementById('notice-container');
 
-// Define your base URL (Change this to your actual deployed domain)
+// Define your base URL
 const BASE_URL = "https://citizen-portal-psi.vercel.app/"; 
 
-notices.forEach(notice => {
-// Construct the full path to the PDF on your server
-// Assuming notice.pdf_path exists, or just using "1.pdf" as in your example
-const pdfUrl = BASE_URL + "1.pdf"; 
+// Use (notice, index) to track the position in the array
+notices.forEach((notice, index) => {
+    
+    // Logic: 1.pdf to 10.pdf for the first 10, then 10.pdf for the rest
+    let pdfFileName;
+    if (index < 8) {
+        pdfFileName = (index + 1) + ".pdf";
+    } else {
+        pdfFileName = "8.pdf";
+    }
 
-// Create the Google Viewer Link
-const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
+    // Construct the path to include the 'circulars' folder
+    const pdfUrl = `${BASE_URL}circulars/${pdfFileName}`; 
 
-const card = document.createElement('div');
-card.className = 'notice-card';
-card.innerHTML = `
-    <div class="card-main">
+    // Create the Google Viewer Link
+    const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
+
+    const card = document.createElement('div');
+    card.className = 'notice-card';
+    card.innerHTML = `
+        <div class="card-main">
             <div class="meta-box">
                 <span class="date-day">${notice.day}</span>
                 <span class="date-month">${notice.month} ${notice.year}</span>
@@ -355,9 +364,8 @@ card.innerHTML = `
                 <span class="doc-category">${notice.category}</span>
                 <span class="doc-name">${notice.name}</span>
                 <div class="actions">
-                                        <a href="${viewerUrl}" target="_blank" class="btn btn-primary">VIEW</a>
-                
-                <a href="${pdfUrl}" download="Notice.pdf" class="btn btn-outline">DOWNLOAD</a>
+                    <a href="${viewerUrl}" target="_blank" class="btn btn-primary">VIEW</a>
+                    <a href="${pdfUrl}" download="${pdfFileName}" class="btn btn-outline">DOWNLOAD</a>
                 </div>
             </div>
         </div>
@@ -367,7 +375,7 @@ card.innerHTML = `
             </ul>
         </div>
     `;
-container.appendChild(card);
+    container.appendChild(card);
 });
 </script>
 <script src="chatbot.js"></script>
