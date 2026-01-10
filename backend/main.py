@@ -97,62 +97,82 @@ def analyze_media():
 
     try:
         text_claim = request.form.get('text', '')
-        image_file = request.files.get('image')
+        image_file = request.files.get('image', None) # Default to None
 
-        vlm_analysis = "No image provided for visual analysis."
-        search_analysis = "No text claim provided for fact-checking."
+        vlm_analysis = "No image provided."
+        search_context = "No text claim provided."
 
-        # Case 1: If Image is present, do Visual Forensics
-        if image_file:
+        # CASE 1: IMAGE PROCESSING (Only if file exists)
+        if image_file and image_file.filename != '':
             temp_path = "temp_analysis.png"
             image_file.save(temp_path)
             img = PIL.Image.open(temp_path)
             
             vlm_res = client.models.generate_content(
                 model="gemini-2.0-flash", 
-                contents=[img, "Analyze this for AI manipulation, deepfake artifacts, or digital tampering. Be neutral."]
+                contents=[img, "Forensic check: Is this AI-generated, a deepfake, or an authentic photo? Look for GAN artifacts."]
             )
             vlm_analysis = vlm_res.text
 
-        # Case 2: If Text is present, do Grounding/Search
+        # CASE 2: SEARCH/FACT-CHECK (Only if text exists)
+        actual_source_link = "Not Found"
         if text_claim:
             search_tool = types.Tool(google_search=types.GoogleSearch())
-            # We include vlm_analysis context even if it's the "No image" string
             search_res = client.models.generate_content(
                 model="gemini-2.0-flash",
-                contents=f"Fact check: {text_claim}. Visual context: {vlm_analysis}",
+                contents=f"Fact check this claim: {text_claim}. Context from image scan: {vlm_analysis}. Provide the specific URL of a news report or official source verifying/debunking this.",
                 config=types.GenerateContentConfig(tools=[search_tool])
             )
-            search_analysis = search_res.text
+            search_context = search_res.text
+            
+            # Extract the actual URL from grounding if available
+            # This is more reliable than the AI 'remembering' the link
+            if hasattr(search_res, 'candidates') and search_res.candidates[0].grounding_metadata:
+                metadata = search_res.candidates[0].grounding_metadata
+                if metadata.search_entry_point:
+                    # Fallback to the search entry point if no direct link
+                    actual_source_link = "See Google Search Results via Lab Report" 
+                if metadata.grounding_chunks:
+                    # Try to get the first real web link
+                    for chunk in metadata.grounding_chunks:
+                        if chunk.web:
+                            actual_source_link = chunk.web.uri
+                            break
 
-        # Final Synthesis
+        # FINAL SYNTHESIS
         final_prompt = f"""
-        Instructions: Synthesize a verdict.
-        Visual Evidence: {vlm_analysis}
-        Search Evidence: {search_analysis}
-        User Claim: {text_claim if text_claim else 'N/A (Image analysis only)'}
+        Evidence: {search_context}
+        Visual: {vlm_analysis}
+        Retrieved Source: {actual_source_link}
         
-        Return ONLY a JSON object:
+        Task: Create a JSON report.
+        Instructions: 
+        1. If 'Retrieved Source' is a URL, use it in the "sources" field. 
+        2. If 'Retrieved Source' is 'Not Found', look through the Evidence text and find a real link. 
+        3. If absolutely no link exists, only then use 'Not Found'.
+
+        Return ONLY JSON:
         {{
           "verdict": "FACT/FAKE/UNVERIFIED",
-          "reasoning": "2 sentence summary.",
-          "sources": "Specific URL or 'Not Found'",
+          "reasoning": "2 sentences.",
+          "sources": "{actual_source_link}",
           "confidence": "HIGH/MEDIUM/LOW",
-          "type": "Authentic/Deepfake/Misleading/AI Generated"
+          "type": "Deepfake/Authentic/Misleading/AI Generated"
         }}
         """
         
         verdict_res = client.models.generate_content(model="gemini-2.0-flash", contents=final_prompt)
         
-        # Standard JSON cleaning logic
+        # Clean and parse JSON
         raw_text = verdict_res.text.strip()
         if "```json" in raw_text:
             raw_text = raw_text.split("```json")[1].split("```")[0].strip()
-        
+            
         return jsonify(json.loads(raw_text))
 
     except Exception as e:
-        return jsonify({"verdict": "ERROR", "reasoning": str(e), "sources": "Not Found"}), 500
+        print(f"Error: {e}")
+        return jsonify({"verdict": "ERROR", "reasoning": "System failed to process partial input.", "sources": "Not Found"}), 500
 
 def _build_cors_preflight_response():
     response = make_response()
