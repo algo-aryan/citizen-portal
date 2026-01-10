@@ -442,6 +442,30 @@
 
         setTimeout(() => showStep(3), 16000);
     }
+
+    window.addEventListener('appShareImage', (event) => {
+    const sharedUri = event.detail.uri;
+    
+    // 1. Update the preview image
+    const scanImg = document.getElementById('scan-img');
+    if (scanImg) scanImg.src = sharedUri;
+
+    // 2. Update the file name text
+    const fileNameDisplay = document.getElementById('file-name');
+    if (fileNameDisplay) {
+        fileNameDisplay.innerText = "Shared Image Loaded";
+        fileNameDisplay.style.color = '#1b5e20'; // Green for success
+    }
+
+    // 3. Store the URI for your 'Execute Neural Scan' button
+    // We convert the URI to a File blob so your existing logic doesn't break
+    fetch(sharedUri)
+        .then(res => res.blob())
+        .then(blob => {
+            selectedFile = new File([blob], "shared_evidence.jpg", { type: "image/jpeg" });
+            console.log("Shared image ready for forensic analysis.");
+        });
+});
 </script>
 
 <script src="chatbot.js"></script>

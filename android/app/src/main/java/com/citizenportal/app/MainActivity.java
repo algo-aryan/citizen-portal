@@ -2,6 +2,7 @@ package com.citizenportal.app;
 
 import android.app.DownloadManager;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -18,13 +19,39 @@ public class MainActivity extends BridgeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Check for shared data when app starts
+        handleIncomingShare(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        // Handle share if app is already running in background
+        setIntent(intent);
+        handleIncomingShare(intent);
+    }
+
+    private void handleIncomingShare(Intent intent) {
+        String action = intent.getAction();
+        String type = intent.getType();
+
+        if (Intent.ACTION_SEND.equals(action) && type != null) {
+            if (type.startsWith("image/")) {
+                Uri imageUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
+                if (imageUri != null && this.getBridge() != null) {
+                    // Give the WebView a moment to load if needed, then fire the JS event
+                    String jsCode = "window.dispatchEvent(new CustomEvent('appShareImage', { detail: { uri: '" + imageUri.toString() + "' } }));";
+                    this.getBridge().getWebView().evaluateJavascript(jsCode, null);
+                }
+            }
+        }
     }
 
     @Override
     public void onStart() {
         super.onStart();
         
-        // Access the Capacitor WebView
+        // Access the Capacitor WebView for existing Download functionality
         WebView webView = this.getBridge().getWebView();
         
         if (webView != null) {
@@ -33,13 +60,10 @@ public class MainActivity extends BridgeActivity {
                 public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype, long contentLength) {
                     try {
                         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
-
-                        // Handle Cookies (important if your PDF is behind a login)
                         String cookies = CookieManager.getInstance().getCookie(url);
                         request.addRequestHeader("cookie", cookies);
                         request.addRequestHeader("User-Agent", userAgent);
 
-                        // Setup Notification and File Path
                         request.setDescription("Downloading file...");
                         request.setTitle(URLUtil.guessFileName(url, contentDisposition, mimetype));
                         request.allowScanningByMediaScanner();
