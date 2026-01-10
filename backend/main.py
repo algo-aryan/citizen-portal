@@ -92,7 +92,6 @@ def handle_chat():
 # --- 2. FORENSIC LAB ENDPOINT ---
 @app.route('/analyze-media', methods=['POST', 'OPTIONS'])
 def analyze_media():
-    # Handle CORS Pre-flight for Safari/macOS
     if request.method == 'OPTIONS':
         response = make_response()
         response.headers.add("Access-Control-Allow-Origin", "*")
@@ -107,53 +106,57 @@ def analyze_media():
         if not image_file:
             return jsonify({"error": "No image uploaded"}), 400
 
-        # Save image temporarily
         temp_path = "temp_analysis.png"
         image_file.save(temp_path)
         img = PIL.Image.open(temp_path)
 
-        # Vision Analysis
+        # 1. Balanced Vision Analysis (Neutral approach)
         vlm_res = client.models.generate_content(
             model="gemini-2.0-flash", 
-            contents=[img, "Identify deepfake artifacts, lighting inconsistencies, or AI generation signs."]
+            contents=[img, "Perform a forensic analysis. Is this image a standard, authentic photograph, or does it show signs of AI generation/manipulation (like GAN artifacts, inconsistent lighting, or distorted textures)? Describe honestly."]
         )
 
-        # Grounding Search
+        # 2. Grounding Search
         search_tool = types.Tool(google_search=types.GoogleSearch())
         search_res = client.models.generate_content(
             model="gemini-2.0-flash",
-            contents=f"Fact check this claim: {text_claim}. Use this visual analysis as context: {vlm_res.text}",
+            contents=f"Fact check this claim: {text_claim}. Is this a known news event? Use this visual context: {vlm_res.text}",
             config=types.GenerateContentConfig(tools=[search_tool])
         )
 
-        # Final JSON synthesizing
+        # 3. Strict Synthesis Prompt
+        # Removed the hardcoded StackExchange link to prevent placeholder hallucination
         final_prompt = f"""
-        Evidence: {search_res.text}
-        Claim: {text_claim}
+        Visual Evidence: {vlm_res.text}
+        Search Evidence: {search_res.text}
+        Claim to Verify: {text_claim}
         
-        Return ONLY a JSON object. No markdown backticks.
-        Keys:
-        - verdict: [FACT/FAKE/UNVERIFIED]
-        - reasoning: [2 sentence explanation]
-        - sources: https://english.stackexchange.com/questions/73361/not-found-or-is-not-found
-        - confidence: [STRICTLY return 'HIGH', 'MEDIUM', or 'LOW']
-        - type: [Deepfake, GAN, Authentic, Phishing, etc.]
+        Task: Based on the evidence, classify the content.
+        
+        Return ONLY a JSON object:
+        {{
+          "verdict": "FACT" or "FAKE" or "UNVERIFIED",
+          "reasoning": "A 2-sentence factual explanation.",
+          "sources": "A single URL to a credible source verifying this. If no specific matching source is found, return exactly 'Not Found'.",
+          "confidence": "HIGH", "MEDIUM", or "LOW",
+          "type": "Authentic Content", "Deepfake", "AI Generated", or "Misleading Context"
+        }}
         """
         
         verdict_res = client.models.generate_content(model="gemini-2.0-flash", contents=final_prompt)
         
-        # Clean response
+        # Clean response string
         raw_text = verdict_res.text.strip()
-        if raw_text.startswith("```json"):
+        if "```json" in raw_text:
             raw_text = raw_text.split("```json")[1].split("```")[0].strip()
-        elif raw_text.startswith("```"):
+        elif "```" in raw_text:
             raw_text = raw_text.split("```")[1].split("```")[0].strip()
             
         return jsonify(json.loads(raw_text))
 
     except Exception as e:
         print(f"Forensic Error: {e}")
-        return jsonify({"verdict": "ERROR", "reasoning": "Forensic analysis failed."}), 500
+        return jsonify({"verdict": "ERROR", "reasoning": "Forensic analysis failed.", "sources": "Not Found"}), 500
 
 
 if __name__ == '__main__':
