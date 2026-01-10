@@ -443,28 +443,36 @@
         setTimeout(() => showStep(3), 16000);
     }
 
-    window.addEventListener('appShareImage', (event) => {
+    // This listener handles the data sent from the Java code
+window.addEventListener('appShareImage', async (event) => {
     const sharedUri = event.detail.uri;
-    
-    // 1. Update the preview image
-    const scanImg = document.getElementById('scan-img');
-    if (scanImg) scanImg.src = sharedUri;
-
-    // 2. Update the file name text
     const fileNameDisplay = document.getElementById('file-name');
-    if (fileNameDisplay) {
-        fileNameDisplay.innerText = "Shared Image Loaded";
-        fileNameDisplay.style.color = '#1b5e20'; // Green for success
-    }
+    const scanImg = document.getElementById('scan-img');
 
-    // 3. Store the URI for your 'Execute Neural Scan' button
-    // We convert the URI to a File blob so your existing logic doesn't break
-    fetch(sharedUri)
-        .then(res => res.blob())
-        .then(blob => {
-            selectedFile = new File([blob], "shared_evidence.jpg", { type: "image/jpeg" });
-            console.log("Shared image ready for forensic analysis.");
-        });
+    if (!sharedUri) return;
+
+    try {
+        // 1. Visually update the UI
+        fileNameDisplay.innerText = "Processing shared image...";
+        fileNameDisplay.style.color = 'var(--gov-accent)';
+        scanImg.src = sharedUri;
+
+        // 2. IMPORTANT: Convert the URI to a real File object for the scan logic
+        const response = await fetch(sharedUri);
+        const blob = await response.blob();
+        
+        // This is the variable your existing code uses:
+        selectedFile = new File([blob], "shared_evidence.jpg", { type: blob.type || "image/jpeg" });
+
+        // 3. Final UI Update
+        fileNameDisplay.innerText = "Shared Image Ready for Scan";
+        fileNameDisplay.style.color = 'var(--live-green)';
+        
+    } catch (error) {
+        console.error("Shared image processing failed:", error);
+        fileNameDisplay.innerText = "Error loading shared image";
+        fileNameDisplay.style.color = 'var(--alert-red)';
+    }
 });
 </script>
 
