@@ -395,21 +395,12 @@
     const fileInput = document.getElementById('file-input');
     let selectedFile = null;
 
-    // Standard manual upload
-    fileInput.onchange = (e) => {
-        if(e.target.files.length > 0) {
-            selectedFile = e.target.files[0];
-            document.getElementById('file-name').innerText = selectedFile.name;
-            document.getElementById('file-name').style.color = 'var(--gov-accent)';
-        }
-    };
-
-    // HANDSHAKE LOGIC: Pull shared image on load
-    document.addEventListener('DOMContentLoaded', async () => {
-        if (window.AndroidBridge && window.AndroidBridge.getPendingImage) {
-            const uri = window.AndroidBridge.getPendingImage();
-            if (uri) {
-                await processSharedImage(uri);
+    // Handshake logic: Automatically runs on page load
+    window.addEventListener('load', async () => {
+        if (window.AndroidBridge && typeof window.AndroidBridge.getPendingImage === 'function') {
+            const sharedUri = window.AndroidBridge.getPendingImage();
+            if (sharedUri) {
+                await processSharedImage(sharedUri);
             }
         }
     });
@@ -419,25 +410,43 @@
         const scanImg = document.getElementById('scan-img');
 
         try {
-            fileNameDisplay.innerText = "Importing shared evidence...";
+            fileNameDisplay.innerText = "Importing evidence...";
             scanImg.src = uri;
 
-            // Fetch binary data from URI
+            // 1. Fetch the image data
             const response = await fetch(uri);
             const blob = await response.blob();
             
-            // Populate the global variable used by startScan()
-            selectedFile = new File([blob], "shared_evidence.jpg", { type: blob.type || "image/jpeg" });
+            // 2. Create a real File object
+            const file = new File([blob], "shared_evidence.jpg", { type: blob.type || "image/jpeg" });
+
+            // 3. CRITICAL: Inject the file into the global variable AND the hidden input
+            selectedFile = file;
+            
+            // This ensures any code listening to the input also sees the file
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput.files = dataTransfer.files;
 
             fileNameDisplay.innerText = "Evidence Secured: Ready for Scan";
             fileNameDisplay.style.color = 'var(--live-green)';
+            console.log("File successfully uploaded to form:", selectedFile);
         } catch (e) {
             console.error("Auto-import failed", e);
             fileNameDisplay.innerText = "Error importing shared file";
         }
     }
 
+    fileInput.onchange = (e) => {
+        if(e.target.files.length > 0) {
+            selectedFile = e.target.files[0];
+            document.getElementById('file-name').innerText = selectedFile.name;
+            document.getElementById('file-name').style.color = 'var(--gov-accent)';
+        }
+    };
+
     function startScan() {
+        // Now 'selectedFile' will not be null
         const text = document.getElementById('claim-text').value;
         if(!text || !selectedFile) {
             alert("Verification Failed: Context and Media are mandatory.");

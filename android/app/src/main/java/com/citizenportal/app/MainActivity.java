@@ -10,6 +10,7 @@ import android.webkit.CookieManager;
 import android.webkit.DownloadListener;
 import android.webkit.JavascriptInterface;
 import android.webkit.URLUtil;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Toast;
 import com.getcapacitor.BridgeActivity;
@@ -22,8 +23,15 @@ public class MainActivity extends BridgeActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        // Setup the Bridge Interface
         WebView webView = this.getBridge().getWebView();
+        WebSettings settings = webView.getSettings();
+        
+        // CRITICAL FIX: Allow the web page to read shared files
+        settings.setAllowFileAccess(true);
+        settings.setAllowContentAccess(true);
+        settings.setAllowFileAccessFromFileURLs(true);
+        settings.setAllowUniversalAccessFromFileURLs(true);
+        
         webView.addJavascriptInterface(new WebAppInterface(), "AndroidBridge");
         
         handleIncomingShare(getIntent());
@@ -42,19 +50,18 @@ public class MainActivity extends BridgeActivity {
                 Uri imageUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
                 if (imageUri != null) {
                     sharedImageUri = imageUri.toString();
-                    // Redirect immediately to the forensic lab
+                    // Navigate to lab.html
                     this.getBridge().getWebView().loadUrl("file:///android_asset/public/lab.html");
                 }
             }
         }
     }
 
-    // HANDSHAKE INTERFACE: JavaScript calls this to get the URI
     public class WebAppInterface {
         @JavascriptInterface
         public String getPendingImage() {
             String temp = sharedImageUri;
-            sharedImageUri = null; // Reset after delivery
+            sharedImageUri = null; 
             return temp;
         }
     }

@@ -57,7 +57,7 @@ Your goal is to empower voters with knowledge, not influence them.
 
 # Initialize Model
 model = genai.GenerativeModel(
-    model_name="gemini-1.5-flash", # Highly efficient for chat
+    model_name="gemini-2.5-flash", # Highly efficient for chat
     system_instruction=SYSTEM_PROMPT
 )
 chat = model.start_chat(history=[])
