@@ -120,7 +120,7 @@ def analyze_media():
             search_tool = types.Tool(google_search=types.GoogleSearch())
             search_res = client.models.generate_content(
                 model="gemini-2.0-flash",
-                contents=f"Fact check this claim: {text_claim}. Context from image scan: {vlm_analysis}. Provide the specific name/URL/article/anything of a news report or official source verifying/debunking this on basis of what you are claiming.",
+                contents=f"Fact check this claim: {text_claim}. Context from image scan: {vlm_analysis}. Provide the specific URL of a news report or official source verifying/debunking this.",
                 config=types.GenerateContentConfig(tools=[search_tool])
             )
             search_context = search_res.text
