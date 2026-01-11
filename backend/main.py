@@ -1,5 +1,6 @@
 import os
 import json
+import random  # Added for random source selection
 import PIL.Image
 from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
@@ -11,7 +12,6 @@ from google.genai import types
 load_dotenv()
 
 app = Flask(__name__)
-# Enable CORS for all routes (Critical for frontend communication)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Configuration
@@ -21,7 +21,14 @@ if not API_KEY:
 
 client = genai.Client(api_key=API_KEY)
 
+# Define the mandatory sources
+OFFICIAL_SOURCES = [
+    "https://www.eci.gov.in/evm-faqs/",
+    "https://www.pib.gov.in/"
+]
+
 # --- SYSTEM PROMPT FOR CIVIC CHAT ---
+# (Kept exactly as provided)
 CIVIC_SYSTEM_PROMPT = """
 You are BharatMat Assistant, an AI-powered civic awareness assistant designed for a
 Voter Awareness & Misinformation Control Platform.
@@ -64,16 +71,15 @@ Your goal is to empower voters with knowledge, not influence them.
 """
 
 # --- 1. CIVIC CHAT ENDPOINT ---
+# (Kept exactly as provided)
 @app.route('/chat', methods=['POST'])
 def handle_chat():
     try:
         data = request.json
         user_input = data.get("message", "")
-        
         if not user_input:
             return jsonify({"reply": "Please enter a message."}), 400
 
-        # Using the new genai client for chat
         response = client.models.generate_content(
             model="gemini-2.0-flash",
             config=types.GenerateContentConfig(
@@ -83,7 +89,6 @@ def handle_chat():
             contents=user_input
         )
         return jsonify({"reply": response.text})
-
     except Exception as e:
         print(f"Chat Error: {e}")
         return jsonify({"reply": "⚠️ System Error: Unable to process chat request."}), 500
@@ -97,12 +102,12 @@ def analyze_media():
 
     try:
         text_claim = request.form.get('text', '')
-        image_file = request.files.get('image', None) # Default to None
+        image_file = request.files.get('image', None)
 
         vlm_analysis = "No image provided."
         search_context = "No text claim provided."
 
-        # CASE 1: IMAGE PROCESSING (Only if file exists)
+        # CASE 1: IMAGE PROCESSING
         if image_file and image_file.filename != '':
             temp_path = "temp_analysis.png"
             image_file.save(temp_path)
@@ -114,48 +119,26 @@ def analyze_media():
             )
             vlm_analysis = vlm_res.text
 
-        # CASE 2: SEARCH/FACT-CHECK (Only if text exists)
-        actual_source_link = "Not Found"
+        # CASE 2: SEARCH/FACT-CHECK
         if text_claim:
             search_tool = types.Tool(google_search=types.GoogleSearch())
             search_res = client.models.generate_content(
                 model="gemini-2.0-flash",
-                contents=f"Fact check this claim: {text_claim}. Context from image scan: {vlm_analysis}. Provide the specific URL of a news report or official source verifying/debunking this.",
+                contents=f"Fact check this claim: {text_claim}. Context from image scan: {vlm_analysis}.",
                 config=types.GenerateContentConfig(tools=[search_tool])
             )
             search_context = search_res.text
-            
-            # Extract the actual URL from grounding if available
-            # This is more reliable than the AI 'remembering' the link
-            if hasattr(search_res, 'candidates') and search_res.candidates[0].grounding_metadata:
-                metadata = search_res.candidates[0].grounding_metadata
-                if metadata.search_entry_point:
-                    # Fallback to the search entry point if no direct link
-                    actual_source_link = "See Google Search Results via Lab Report" 
-                if metadata.grounding_chunks:
-                    # Try to get the first real web link
-                    for chunk in metadata.grounding_chunks:
-                        if chunk.web:
-                            actual_source_link = chunk.web.uri
-                            break
 
-        # FINAL SYNTHESIS
+        # FINAL SYNTHESIS - Removed instructions to find links to save tokens
         final_prompt = f"""
         Evidence: {search_context}
         Visual: {vlm_analysis}
-        Retrieved Source: {actual_source_link}
         
         Task: Create a JSON report.
-        Instructions: 
-        1. If 'Retrieved Source' is a URL, use it in the "sources" field. 
-        2. If 'Retrieved Source' is 'Not Found', look through the Evidence text and find a real link. 
-        3. If absolutely no link exists, only then use 'Not Found'.
-
         Return ONLY JSON:
         {{
           "verdict": "FACT/FAKE/UNVERIFIED",
           "reasoning": "2 sentences.",
-          "sources": "{actual_source_link}",
           "confidence": "HIGH/MEDIUM/LOW",
           "type": "Deepfake/Authentic/Misleading/AI Generated"
         }}
@@ -163,16 +146,25 @@ def analyze_media():
         
         verdict_res = client.models.generate_content(model="gemini-2.0-flash", contents=final_prompt)
         
-        # Clean and parse JSON
         raw_text = verdict_res.text.strip()
         if "```json" in raw_text:
             raw_text = raw_text.split("```json")[1].split("```")[0].strip()
             
-        return jsonify(json.loads(raw_text))
+        # Parse the JSON from LLM
+        report = json.loads(raw_text)
+
+        # MANDATORY OVERRIDE: Always pick one of the two URLs randomly
+        report["sources"] = random.choice(OFFICIAL_SOURCES)
+
+        return jsonify(report)
 
     except Exception as e:
         print(f"Error: {e}")
-        return jsonify({"verdict": "ERROR", "reasoning": "System failed to process partial input.", "sources": "Not Found"}), 500
+        return jsonify({
+            "verdict": "ERROR", 
+            "reasoning": "System failed to process partial input.", 
+            "sources": random.choice(OFFICIAL_SOURCES) # Random source even on error
+        }), 500
 
 def _build_cors_preflight_response():
     response = make_response()
@@ -181,8 +173,6 @@ def _build_cors_preflight_response():
     response.headers.add("Access-Control-Allow-Methods", "*")
     return response
 
-
 if __name__ == '__main__':
-    # Render provides the PORT environment variable
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
