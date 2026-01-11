@@ -53,7 +53,7 @@
             </div>
             <div id="bot-messages">
                 <div class="msg bot">
-                    <strong>Namaste!</strong> 🇮🇳<br>
+                    <strong>Namaste!</strong><br>
                     I am your digital guide to the Indian Democratic process. How can I assist your journey as a citizen today?
                 </div>
             </div>

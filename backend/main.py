@@ -23,7 +23,7 @@ client = genai.Client(api_key=API_KEY)
 
 # Define the mandatory sources
 OFFICIAL_SOURCES = [
-    "https://www.eci.gov.in/evm-faqs/",
+    "https://www.eci.gov.in/",
     "https://www.pib.gov.in/"
 ]
 
