@@ -1,101 +1,129 @@
 import os
 import json
-from dotenv import load_dotenv
-from google import genai
-from google.genai import types
+import torch
+from serpapi import GoogleSearch
+from transformers import pipeline
 
-# Load Environment Variables
-load_dotenv()
-API_KEY = os.getenv("GEMINI_API_KEY")
+# --- CONFIGURATION ---
+SERPAPI_KEY = os.getenv("SERPAPI_KEY")
 
-def safe_save(folder, filename, content):
-    """Ensures folder exists and writes content safely."""
-    os.makedirs(folder, exist_ok=True)
-    filepath = os.path.join(folder, filename)
-    with open(filepath, "w", encoding="utf-8") as f:
-        f.write(content)
-    print(f"📄 Saved: {filepath}")
+# --- 1. INITIALIZE DeBERTa-v3 ---
+print("⏳ Loading DeBERTa-v3 NLI model...")
+nli_analyzer = pipeline(
+    "text-classification", 
+    model="cross-encoder/nli-deberta-v3-small",
+    use_fast=False
+)
 
-def fact_check_pipeline(claim):
-    if not API_KEY:
-        print("❌ Error: GEMINI_API_KEY not found in .env")
-        return
+def fetch_serp_evidence(query):
+    """Fetches organic search snippets and links from SerpAPI."""
+    if not SERPAPI_KEY:
+        print("❌ DEBUG: SERPAPI_KEY is missing!")
+        return "", []
 
-    client = genai.Client(api_key=API_KEY)
-    model_id = "gemini-2.0-flash"
-    folder_name = "fact_check_results"
-
-    print(f"\n🧐 Analyzing Claim: '{claim}'")
-
-    # --- STEP 1: GENERATE QUERIES ---
-    query_prompt = f"Generate 3-4 search queries to verify this claim: '{claim}'. Return ONLY the queries, one per line."
-    q_res = client.models.generate_content(model=model_id, contents=query_prompt)
-    synthetic_queries = [q.strip() for q in q_res.text.strip().split('\n') if q.strip()]
+    params = {
+        "q": query,
+        "location": "India",
+        "hl": "en",
+        "gl": "in",
+        "google_domain": "google.co.in",
+        "api_key": SERPAPI_KEY
+    }
     
-    # Save Step 1
-    safe_save(folder_name, "synthetic_queries.txt", "\n".join(synthetic_queries))
+    try:
+        search = GoogleSearch(params)
+        results = search.get_dict()
+        
+        evidence_list = []
+        links = []
+        
+        if "organic_results" in results:
+            for res in results["organic_results"][:3]:
+                snippet = res.get("snippet", "")
+                link = res.get("link", "")
+                if snippet:
+                    evidence_list.append(snippet)
+                    links.append(link)
+        
+        # DEBUG PRINT FOR INDIVIDUAL QUERY RESULTS
+        print(f"   ∟ Found {len(evidence_list)} snippets for this query.")
+                    
+        return " ".join(evidence_list), links
+    except Exception as e:
+        print(f"⚠️ DEBUG: Search Error for query '{query}': {e}")
+        return "", []
 
-    # --- STEP 2: SEARCH & FETCH ---
+def verify_claim_pipeline(claim):
+    print(f"\n{'='*20} DEBUG START {'='*20}")
+    print(f"CLAIM: {claim}")
+    
+    all_snippets = []
     all_urls = []
-    evidence_text = ""
     
-    for query in synthetic_queries:
-        print(f"🔍 Searching: {query}...")
-        # Use the updated Google Search tool for 2026
-        search_tool = types.Tool(google_search=types.GoogleSearch())
-        response = client.models.generate_content(
-            model=model_id,
-            contents=query,
-            config=types.GenerateContentConfig(tools=[search_tool])
-        )
-        
-        # Collect URLs from grounding metadata
-        metadata = response.candidates[0].grounding_metadata
-        if metadata.grounding_chunks:
-            for chunk in metadata.grounding_chunks:
-                if chunk.web:
-                    all_urls.append(chunk.web.uri)
-        
-        evidence_text += f"\nQuery: {query}\nEvidence: {response.text}\n"
+    # Step 1: Query Generation
+    queries = [
+        f'{claim} site:pib.gov.in',        
+        f'{claim} site:eci.gov.in',        
+        f'"{claim}"',                      
+        f'fact check {claim}'              
+    ]
+    
+    print("\n--- STEP 1: GENERATED QUERIES ---")
+    for i, q in enumerate(queries):
+        print(f"{i+1}. {q}")
 
-    # Save Step 2
-    unique_urls = list(set(all_urls))
-    safe_save(folder_name, "urls.txt", "\n".join(unique_urls))
+    # Step 2: Retrieval
+    print("\n--- STEP 2: FETCHING SOURCES ---")
+    for q in queries:
+        snippets, links = fetch_serp_evidence(q)
+        if snippets:
+            all_snippets.append(snippets)
+            all_urls.extend(links)
 
-    # --- STEP 3: FINAL VERDICT ---
-    final_prompt = f"""
-    Based on this evidence: {evidence_text}
-    Verify the claim: {claim}
-    Return strict json
+    # Step 3: Check Aggregate Evidence
+    full_evidence = " ".join(all_snippets).strip()
+    print(f"\n--- STEP 3: EVIDENCE AGGREGATION ---")
+    print(f"Total Snippets Gathered: {len(all_snippets)}")
+    print(f"Total Unique URLs: {len(set(all_urls))}")
     
-    Final Answer structure:
-    VERDICT: [FACT/FAKE/UNVERIFIED]
-    REASONING: [Short and precise logic]
-    Type:
-    SOURCES: [1-2 URLs]
-    STRICT JSON
-    give source as "Not Found As it is Fake" for fake facts
-    and for real give few links for that authentic
-    
-    type of fake it is like phisisng deepfake etc for fake 
-    and for real it is like election notification ,campaign, political informationm,general ,etc, etc
+    if not full_evidence:
+        print("🛑 DEBUG: STOPPING - No evidence found to analyze.")
+        return {
+            "verdict": "UNVERIFIED",
+            "reasoning": "Search returned zero results from official/trusted sources.",
+            "sources": "Not Found"
+        }
 
-    return a json with keys verdict reasoning sources
-    """
-    # TYPE OF FAKE
-    #SOURCE: FAKE- NOT FOUND , REAL: GIVE
+    # Step 4: NLI Verification
+    print("\n--- STEP 4: DeBERTa ANALYSIS ---")
+    # Truncate evidence if it's too long for DeBERTa (max 512 tokens usually)
+    nli_result = nli_analyzer([{"text": full_evidence[:2000], "text_pair": claim}])[0]
     
-    final_res = client.models.generate_content(model=model_id, contents=final_prompt)
-    verdict = final_res.text.strip()
-    
-    # Save Step 3
-    safe_save(folder_name, "ans.txt", verdict)
+    label = nli_result['label'].upper()
+    score = nli_result['score']
+    print(f"Raw NLI Label: {label}")
+    print(f"Raw Confidence: {score:.4f}")
 
-    # Final Terminal Output
-    print("\n" + "="*40)
-    print(verdict)
-    print("="*40)
+    # Step 5: Final Result
+    verdict = "UNVERIFIED"
+    # Logic: If confidence is too low, we don't commit to FACT or FAKE
+    if label == "ENTAILMENT" and score > 0.5:
+        verdict = "FACT"
+    elif label == "CONTRADICTION" and score > 0.5:
+        verdict = "FAKE"
+    else:
+        print(f"⚠️ DEBUG: Score {score:.2f} too low for threshold 0.5")
+
+    print(f"{'='*20} DEBUG END {'='*20}\n")
+
+    return {
+        "verdict": verdict,
+        "reasoning": f"DeBERTa {label} match ({score:.1%})",
+        "sources": list(set(all_urls))[:3] if all_urls else "Not Found",
+        "confidence": "HIGH" if score > 0.8 else "MEDIUM"
+    }
 
 if __name__ == "__main__":
     user_input = input("Enter the claim: ")
-    fact_check_pipeline(user_input)
+    report = verify_claim_pipeline(user_input)
+    print(json.dumps(report, indent=4))
