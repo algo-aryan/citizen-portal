@@ -173,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     busy = false; 
                 } else { 
                     cuText.innerHTML = `ALL VOTES<br>RECORDED`; 
-                    instructionText.innerHTML = `<strong>Voting Complete!</strong><br>You have successfully cast your ONOE votes.`; 
+                    instructionText.innerHTML = `<strong>Voting Complete!</strong> You have successfully cast your ONOE votes.`; 
                     restartBtn.style.display = 'inline-block'; // Show Restart Button
                 } 
             }, 5600); 
