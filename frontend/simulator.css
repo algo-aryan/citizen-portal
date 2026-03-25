@@ -1,0 +1,175 @@
+/* ===== ONOE VOTING SIMULATOR — STACKED UI WITH WIRE FIX ===== */ 
+
+:root {
+    --gov-blue: #002D58;
+    --gov-accent: #0056b3;
+    --live-green: #1b5e20;
+    --alert-red: #b71c1c;
+    --bg-gray: #e9ecef;
+    --safe-top: env(safe-area-inset-top);
+    --nav-height: calc(65px + var(--safe-top));
+}
+
+* { 
+    box-sizing: border-box; 
+    margin: 0; padding: 0; 
+    font-family: 'Inter', Tahoma, sans-serif; 
+    font-weight: 700; 
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+} 
+
+html, body { 
+    height: 100%; width: 100%; 
+    overflow: hidden; 
+    background: var(--bg-gray); 
+} 
+
+/* --- Official Nav Theme --- */
+.official-nav {
+    position: fixed; top: 0; left: 0; width: 100%; height: var(--nav-height);
+    background: #fff; border-bottom: 4px solid var(--gov-blue);
+    display: flex; align-items: flex-end; padding: 0 15px 12px 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    z-index: 5000;
+}
+.nav-content { display: flex; align-items: center; width: 100%; gap: 15px; }
+.back-btn { text-decoration: none; color: var(--gov-blue); font-size: 28px; font-weight: 300; line-height: 1; cursor: pointer; }
+.nav-brand { display: flex; align-items: center; gap: 10px; }
+.nav-emblem { height: 32px; }
+.nav-title h1 { font-size: 14px; color: var(--gov-blue); font-weight: 800; text-transform: uppercase; margin: 0; }
+.nav-title p { font-size: 10px; color: var(--live-green); font-weight: 700; margin: 0; display: flex; align-items: center; gap: 4px; }
+.nav-title p::before { content: ""; width: 7px; height: 7px; background: var(--live-green); border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+
+/* The container that rotates ONLY the EVM content */
+.main-rotator {
+    position: absolute; 
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: transparent;
+    overflow: hidden;
+}
+
+/* The fixed scale board - Stacked Layout */
+.illustration-wrapper { 
+    width: 1450px; height: 780px; /* Taller to fit the text box below */
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 30px; /* Space between machines and text box */
+    position: relative;
+} 
+
+/* Devices aligned in a row */
+.devices-container { 
+    display: flex; flex-direction: row; flex-wrap: nowrap; 
+    justify-content: center; align-items: flex-end; gap: 40px; 
+    position: relative; z-index: 20; padding-top: 40px; 
+} 
+
+/* Text Box perfectly centered below */
+.instruction-box {
+    background: #fff; border: 3px solid var(--gov-blue);
+    padding: 20px 40px; font-size: 26px; color: var(--gov-blue);
+    border-radius: 16px; box-shadow: 0 4px 15px rgba(0,45,88,0.15);
+    width: 80%; text-align: center;
+    display: flex; flex-direction: column; align-items: center; gap: 15px;
+}
+
+/* Cast Vote Again Button */
+.restart-btn {
+    display: none; /* Hidden until done */
+    background: var(--live-green); color: #fff;
+    border: none; border-radius: 8px;
+    padding: 12px 30px; font-size: 20px; font-weight: 800;
+    cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    text-transform: uppercase; transition: transform 0.1s;
+}
+.restart-btn:active { transform: scale(0.95); }
+
+.device-label { 
+    position: absolute; top: -35px; left: 50%; transform: translateX(-50%); 
+    font-size: 14px; color: #000; white-space: nowrap; font-weight: 800; 
+} 
+
+.device { 
+    background: #bdcddc; border: 3px solid #222; border-radius: 8px; 
+    box-shadow: inset -4px -4px 0 rgba(0,0,0,0.1), 3px 5px 0 rgba(0,0,0,0.15); 
+    position: relative; flex-shrink: 0;
+} 
+
+/* Device Components */
+.control-unit { width: 250px; height: 400px; display: flex; flex-direction: column; padding: 12px; } 
+.cu-plugs { position: absolute; top: -16px; left: 40px; display: flex; gap: 15px; } 
+.plug { width: 16px; height: 16px; background: #333; border: 2px solid #000; border-radius: 3px 3px 0 0; position: relative; } 
+
+.cu-screen-area { background: #aabccb; border: 2px solid #222; border-radius: 4px; padding: 8px; display: flex; align-items: center; justify-content: space-between; height: 50px; margin-bottom: 20px; } 
+.cu-leds { display: flex; flex-direction: column; gap: 6px; } 
+.led { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid #222; background: #7a8a9a; } 
+.cu-screen { background: #111; border: 2px solid #333; width: 100px; height: 30px; display: flex; align-items: center; justify-content: center; } 
+.cu-text { color: #00ff00; font-size: 9px; font-family: 'JetBrains Mono', monospace; text-align: center; line-height: 1.2; } 
+.cu-mid { flex: 1; border-top: 2px solid #9aaebf; border-bottom: 2px solid #9aaebf; position: relative; } 
+.screw { width: 6px; height: 6px; border: 1.5px solid #111; border-radius: 50%; position: absolute; } 
+.screw.tl { top: 10px; left: 0; } .screw.tr { top: 10px; right: 0; } 
+.screw.bl { bottom: 10px; left: 0; } .screw.br { bottom: 10px; right: 0; } 
+.cu-bottom { height: 70px; display: flex; flex-wrap: wrap; padding-top: 15px; gap: 10px; align-items: center; } 
+.btn-red-pill { width: 24px; height: 10px; background: var(--alert-red); border: 2px solid #111; border-radius: 10px; } 
+.btn-green-pill { width: 12px; height: 8px; background: var(--live-green); border: 2px solid #111; border-radius: 8px; } 
+.btn-blue-sq { width: 36px; height: 28px; background: var(--gov-blue); border: 2px solid #111; border-radius: 4px; margin-left: auto; display: flex; justify-content: center; align-items: center; color: white; cursor: pointer; } 
+.btn-blue-sq:active { transform: translateY(2px); } 
+
+.vvpat { width: 250px; height: 400px; display: flex; flex-direction: column; align-items: center; border-radius: 15px 15px 8px 8px; padding-top: 15px; } 
+.vvpat-top-slanted { width: 60%; height: 35px; background: #b0c2d2; border: 2px solid #222; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: center; align-items: center; box-shadow: inset 0 -4px 0 rgba(0,0,0,0.1); } 
+.vvpat-sticker { display: flex; outline: 1px solid #111; transform: rotate(-20deg); } 
+.sticker-color { width: 8px; height: 20px; } 
+
+.vvpat-window-frame { width: 85%; height: 110px; background: #111; border: 2px solid #333; border-radius: 4px; padding: 10px; position: relative; border-bottom: 15px solid #9aaebf; overflow: hidden; } 
+.vvpat-paper { background: #fff; width: 100%; height: 100%; border-radius: 2px; display: flex; flex-direction: column; align-items: center; padding: 6px 4px; position: absolute; top: -100%; left: 0; } 
+.vvpat-paper.show { animation: print-drop 5.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; } 
+@keyframes print-drop { 0% { top: -100%; } 10% { top: 0; } 85% { top: 0; opacity: 1; } 100% { top: 120%; opacity: 0; } } 
+.paper-detail { font-size: 8px; color: #111; text-align: center; line-height: 1.3; font-weight: 800; } 
+.paper-symbol { font-size: 32px; margin: 2px 0; } 
+.vvpat-leds { display: flex; gap: 4px; margin-top: 10px; align-items: center; } 
+.v-led { width: 6px; height: 6px; border-radius: 50%; border: 1px solid #111; background: #888; } 
+.v-line { width: 20px; height: 2px; background: #444; } 
+.vvpat-title { margin-top: auto; margin-bottom: 20px; font-size: 14px; text-align: center; color: #111; line-height: 1.1; font-weight: 900; } 
+
+.ballot-unit { width: 250px; height: 550px; padding: 8px; } 
+.bu-inner { background: #fff; border: 2px solid #222; border-radius: 4px; height: 100%; display: flex; flex-direction: column; } 
+
+/* FIXED TRANSPARENCY BUG: Overlay Instead of global opacity */
+.ballot-unit.disabled { pointer-events: none; } 
+.ballot-unit.disabled .bu-inner { position: relative; }
+.ballot-unit.disabled .bu-inner::after { 
+    content: ''; position: absolute; inset: 0; 
+    background: rgba(230, 235, 240, 0.7); /* Fades inner buttons but keeps device body solid */
+    border-radius: 4px; z-index: 10; 
+}
+
+.bu-header { background: #c3d2df; border-bottom: 2px solid #222; display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; } 
+.bu-name { font-size: 12px; color: #111; } 
+.bu-led { width: 12px; height: 6px; background: #3c3; border: 1.5px solid #111; border-radius: 3px; } 
+.bu-grid { display: grid; grid-template-columns: 28px 1fr 40px 65px; flex: 1; border-collapse: collapse; } 
+.bu-col-header, .bu-cell { border-bottom: 2px solid #222; border-right: 2px solid #222; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; } 
+.bu-col-header:last-child, .bu-cell:last-child { border-right: none; } 
+.bu-row:last-child .bu-cell { border-bottom: none; } 
+.bu-row { display: contents; } 
+.bu-col-header { background: #e2e8f0; font-size: 7px; padding: 4px; } 
+.bu-col-sl { background: #f8e1e3; color: var(--alert-red); font-size: 14px; font-weight: 900; } 
+.bu-col-name { background: #fff; align-items: flex-start; padding-left: 6px; } 
+.name-eng { font-size: 11px; color: #000; display: block; } 
+.name-party { font-size: 7px; color: #111; display: block; font-weight: 500; } 
+.bu-col-sym { background: #fff; font-size: 20px; } 
+.bu-col-vote { background: #bdcddc; flex-direction: row; gap: 6px; padding: 0 4px; } 
+.vote-led { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid #222; background: #7a8a9a; transition: background 0.2s; } 
+.vote-led.on { background: #f33; box-shadow: 0 0 4px #f33; } 
+.vote-btn { width: 38px; height: 18px; border-radius: 9px; border: 2px solid #111; background: var(--gov-blue); color: #fff; font-size: 8px; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.3); transition: transform 0.1s; } 
+.vote-btn:active { transform: translateY(2px); box-shadow: inset 0 0 0 rgba(0,0,0,0); } 
+.vote-btn.pressed { background: var(--alert-red); color: #fff; } 
+.nota-cell { font-size: 11px; font-weight: 900; background: #fff; } 
+
+/* =========================================================
+   PROPER TOP-ARCHING WIRES
+   ========================================================= */
+#cu::after { content: ''; position: absolute; top: -20px; right: -60px; width: 80px; height: 60px; border: 5px solid #222; border-bottom: none; border-radius: 40px 40px 0 0; z-index: -1; }
+#vvpat::after { content: ''; position: absolute; top: -60px; right: -65px; width: 90px; height: 100px; border: 5px solid #222; border-bottom: none; border-radius: 45px 45px 0 0; z-index: -1; }
+#bu1::after { content: ''; position: absolute; top: -30px; right: -60px; width: 80px; height: 60px; border: 5px solid #222; border-bottom: none; border-radius: 40px 40px 0 0; z-index: -1; }
+#bu2::after { content: ''; position: absolute; top: -30px; right: -60px; width: 80px; height: 60px; border: 5px solid #222; border-bottom: none; border-radius: 40px 40px 0 0; z-index: -1; }

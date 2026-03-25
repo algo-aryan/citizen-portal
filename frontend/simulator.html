@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Media Verification Lab | BNN</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="simulator.css">
+</head>
+<body>
+
+<nav class="official-nav">
+    <div class="nav-content">
+        <a href="home.html" class="back-btn" onclick="location.reload()">←</a>
+        <div class="nav-brand">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" class="nav-emblem" alt="Emblem">
+            <div class="nav-title">
+                <h1>Bharat Mat</h1>
+                <p>FORENSIC LAB • 2026</p>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div id="main-rotator" class="main-rotator">
+    
+    <div class="illustration-wrapper" id="scale-wrapper">
+
+        <div class="devices-container" id="devices">
+            <div class="device control-unit" id="cu">
+                <div class="device-label">EVM CONTROL UNIT</div>
+                <div class="cu-plugs">
+                    <div class="plug"></div>
+                    <div class="plug"></div>
+                </div>
+                <div class="cu-screen-area">
+                    <div class="cu-leds">
+                        <div class="led" style="background: #a00"></div>
+                        <div class="led" style="background: #0a0"></div>
+                    </div>
+                    <div class="cu-screen">
+                        <div class="cu-text" id="cu-text">READY<br>ECI 2024</div>
+                    </div>
+                    <div class="cu-leds">
+                        <div class="led"></div>
+                        <div class="led"></div>
+                    </div>
+                </div>
+                <div class="cu-mid">
+                    <div class="screw tl"></div>
+                    <div class="screw tr"></div>
+                    <div class="screw bl"></div>
+                    <div class="screw br"></div>
+                </div>
+                <div class="cu-bottom">
+                    <div class="btn-red-pill"></div>
+                    <div class="btn-green-pill" style="margin-left:8px;"></div>
+                    <div class="btn-green-pill" style="background:#fff; width:16px; height:12px; display:flex; justify-content:center; align-items:center;">
+                        <div style="width:8px; height:6px; background:#3c3; border-radius:4px;"></div>
+                    </div>
+                    <div class="btn-blue-sq" id="cu-reset" title="Reset Simulation">✓</div>
+                </div>
+            </div>
+
+            <div class="device vvpat" id="vvpat">
+                <div class="device-label">VVPAT PRINTER</div>
+                <div class="vvpat-top-slanted">
+                    <div class="vvpat-sticker">
+                        <div class="sticker-color" style="background:#444"></div>
+                        <div class="sticker-color" style="background:#fff"></div>
+                        <div class="sticker-color" style="background:#999"></div>
+                    </div>
+                </div>
+                <div class="vvpat-window-frame">
+                    <div class="vvpat-paper" id="vvpat-paper">
+                        <div class="paper-detail" style="border-bottom:1px dashed #999; width:90%; padding-bottom:2px; margin-bottom:2px;">SL No. <span id="slip-sn">--</span></div>
+                        <div class="paper-symbol" id="slip-sym"></div>
+                        <div class="paper-detail"><strong id="slip-name" style="font-size: 10px;">Name</strong></div>
+                        <div class="paper-detail" id="slip-party">Party</div>
+                    </div>
+                </div>
+                <div class="vvpat-leds">
+                    <div class="v-led"></div><div class="v-led"></div><div class="v-line"></div><div class="v-led"></div><div class="v-led"></div>
+                </div>
+                <div class="vvpat-title">VVPAT<br>PRINTER</div>
+            </div>
+
+            <div class="device ballot-unit" id="bu1">
+                <div class="bu-inner">
+                    <div class="bu-header">
+                        <div class="bu-name">BALLOT UNIT 1</div>
+                        <div class="bu-led" id="bled1"></div>
+                    </div>
+                    <div class="bu-grid" id="bu1-grid">
+                        <div class="bu-col-header">SL.No.</div>
+                        <div class="bu-col-header">Candidate Name<br><span style="font-weight:normal">(Hindi/Eng)</span></div>
+                        <div class="bu-col-header">Party<br>Symbol</div>
+                        <div class="bu-col-header">Vote<br>button</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="device ballot-unit disabled" id="bu2">
+                <div class="bu-inner">
+                    <div class="bu-header">
+                        <div class="bu-name">BALLOT UNIT 2</div>
+                        <div class="bu-led" id="bled2"></div>
+                    </div>
+                    <div class="bu-grid" id="bu2-grid">
+                        <div class="bu-col-header">SL.No.</div>
+                        <div class="bu-col-header">Candidate Name<br><span style="font-weight:normal">(Hindi/Eng)</span></div>
+                        <div class="bu-col-header">Party<br>Symbol</div>
+                        <div class="bu-col-header">Vote<br>button</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="device ballot-unit disabled" id="bu3">
+                <div class="bu-inner">
+                    <div class="bu-header">
+                        <div class="bu-name">BALLOT UNIT 3</div>
+                        <div class="bu-led" id="bled3"></div>
+                    </div>
+                    <div class="bu-grid" id="bu3-grid">
+                        <div class="bu-col-header">SL.No.</div>
+                        <div class="bu-col-header">Candidate Name<br><span style="font-weight:normal">(Hindi/Eng)</span></div>
+                        <div class="bu-col-header">Party<br>Symbol</div>
+                        <div class="bu-col-header">Vote<br>button</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="instruction-box">
+            <div id="instruction-text">Click a blue <strong>PRESS</strong> button on the active Ballot Unit.</div>
+            <button id="restart-btn" class="restart-btn">Cast Vote Again</button>
+        </div>
+
+    </div>
+</div>
+
+<script src="simulator.js"></script>
+</body>
+</html>

@@ -7,11 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoutBtn = document.getElementById('logout-btn');
 
     function toggleDrawer() {
-        // Remove the utility hidden class if it exists
         if (drawer.classList.contains('hidden')) {
             drawer.classList.remove('hidden');
         }
-        // Toggle the active animation class
         drawer.classList.toggle('active');
     }
 
@@ -35,7 +33,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- 3. Carousel Auto-Scroll Logic ---
     // --- 3. Carousel Logic (With Dots) ---
     const track = document.getElementById('carousel-track');
     const dotsContainer = document.getElementById('carousel-dots');
@@ -43,7 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (track && slides.length > 0) {
         
-        // 1. Generate Dots
         slides.forEach((_, index) => {
             const dot = document.createElement('div');
             dot.classList.add('dot');
@@ -53,10 +49,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const dots = document.querySelectorAll('.dot');
 
-        // 2. Update Dots on Scroll
         track.addEventListener('scroll', () => {
             const slideWidth = slides[0].getBoundingClientRect().width;
-            // Calculate which slide index is mostly visible
             const scrollIndex = Math.round(track.scrollLeft / slideWidth);
             
             dots.forEach((d, i) => {
@@ -65,13 +59,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // 3. Auto-Scroll
         let currentIndex = 0;
         const totalSlides = slides.length;
-        const gap = 15; // Must match CSS gap
+        const gap = 15; 
 
         setInterval(() => {
-            // Only auto-scroll if user isn't touching (optional refinement, but simple for now)
             currentIndex = (currentIndex + 1) % totalSlides;
             const slideWidth = slides[0].getBoundingClientRect().width;
             const scrollPosition = (slideWidth + gap) * currentIndex;

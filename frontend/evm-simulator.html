@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ECI ONOE Official Guide | Delhi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Hind:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gov-blue: #002D58;
+            --evm-cream: #e1e2d6;
+            --evm-border: #bcbead;
+            --bu-blue: #1b3a8a;
+            --lamp-red: #ff0000;
+            --safe-top: env(safe-area-inset-top);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: 'Inter', 'Hind', sans-serif; 
+            background: #f4f7f9; 
+            height: 100dvh; 
+            display: flex; 
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- Header --- */
+        header {
+            background: #fff;
+            padding: calc(15px + var(--safe-top)) 15px 12px;
+            border-bottom: 4px solid var(--gov-blue);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 1000;
+        }
+        .logo-group { display: flex; align-items: center; gap: 10px; }
+        .logo { height: 35px; }
+        .h-text h1 { font-size: 13px; color: var(--gov-blue); font-weight: 900; text-transform: uppercase; }
+        .h-text p { font-size: 9px; color: #1b5e20; font-weight: 700; }
+
+        /* --- Instruction Bar --- */
+        .instruction-header {
+            background: var(--gov-blue);
+            color: #fff;
+            padding: 12px 20px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .instruction-header .hi { display: block; font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+        .instruction-header .en { display: block; font-size: 11px; opacity: 0.8; }
+
+        .app-body { flex: 1; overflow-y: auto; position: relative; }
+
+        /* --- Educational Step Views --- */
+        .step-view { display: none; padding: 20px; flex-direction: column; height: 100%; }
+        .step-view.active { display: flex; }
+
+        .info-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .visual-icon { font-size: 70px; text-align: center; margin-bottom: 20px; }
+        .info-title { color: var(--gov-blue); font-weight: 800; font-size: 18px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .info-body { font-size: 14px; line-height: 1.6; color: #333; overflow-y: auto; }
+        .info-body strong { color: var(--gov-blue); }
+
+        /* --- REALISTIC VERTICAL BALLOT UNIT --- */
+        .bu-wrapper { width: 100%; max-width: 360px; margin: 0 auto; padding: 10px 0 40px; }
+        .bu-machine {
+            background: var(--evm-cream);
+            border: 2px solid var(--evm-border);
+            border-radius: 4px;
+            padding: 4px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .bu-row {
+            background: #fff; height: 55px; border: 1px solid #999;
+            margin-bottom: 3px; display: flex; align-items: center; padding: 0 10px;
+        }
+        .cand-no { width: 25px; font-weight: 900; font-size: 15px; }
+        .cand-info { flex: 1; padding: 0 10px; }
+        .cand-name { font-size: 10px; font-weight: 900; display: block; text-transform: uppercase; }
+        .cand-party { font-size: 8px; color: #666; font-weight: 600; }
+        .cand-sym { width: 50px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 26px; border-left: 1px solid #eee; border-right: 1px solid #eee; margin-right: 10px; }
+        .bu-action { width: 65px; display: flex; align-items: center; justify-content: space-between; }
+        .lamp { width: 12px; height: 12px; background: #333; border-radius: 50%; border: 1px solid #000; }
+        .lamp.lit { background: var(--lamp-red); box-shadow: 0 0 10px var(--lamp-red); }
+        .vote-btn { 
+            width: 40px; height: 30px; background: var(--bu-blue); 
+            border: none; border-radius: 3px; box-shadow: 0 3px 0 #0d2255; 
+        }
+        .vote-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #0d2255; }
+
+        /* --- FIXED VVPAT MODAL --- */
+        #vvpat-modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+            z-index: 2000; display: none; align-items: center; justify-content: center;
+        }
+        .vvpat-case {
+            width: 240px; background: var(--evm-cream); border-radius: 12px; padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .vvpat-window {
+            width: 180px; height: 180px; background: #000; border: 6px solid #444;
+            position: relative; overflow: hidden; border-radius: 5px;
+        }
+        .slip {
+            width: 150px; height: 150px; background: #fff; position: absolute;
+            left: 50%; margin-left: -75px; top: -160px; padding: 15px;
+            text-align: center; border: 1px solid #ccc;
+            transition: transform 1.2s cubic-bezier(0.1, 0.5, 0.5, 1);
+        }
+        .slip.show { transform: translateY(175px); }
+        .slip.cut { transform: translateY(380px); }
+
+        /* --- TRANSITION SCREEN --- */
+        #transition-modal {
+            position: fixed; inset: 0; background: var(--gov-blue);
+            z-index: 3000; display: none; flex-direction: column;
+            align-items: center; justify-content: center; color: white; text-align: center;
+        }
+
+        footer { padding: 15px 20px calc(15px + env(safe-area-inset-bottom)); background: #fff; border-top: 1px solid #ddd; }
+        .next-btn {
+            width: 100%; background: var(--gov-blue); color: #fff;
+            padding: 18px; border: none; border-radius: 12px;
+            font-size: 16px; font-weight: 800; text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo-group">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" class="logo">
+        <div class="h-text">
+            <h1>Election Commission</h1>
+            <p>DELHI ONOE TRAINING • 2026</p>
+        </div>
+    </div>
+</header>
+
+<div class="instruction-header" id="top-bar">
+    <span class="hi">अपना पहचान पत्र अधिकारी को दिखाएं</span>
+    <span class="en">Present your Identity Card to the Officer</span>
+</div>
+
+<div class="app-body">
+    <div id="step-1" class="step-view active">
+        <div class="info-card">
+            <div class="visual-icon">🪪</div>
+            <h3 class="info-title">Officer 1: Identification</h3>
+            <div class="info-body">
+                <p><strong>हिंदी:</strong> सबसे पहले आपको <strong>प्रथम मतदान अधिकारी</strong> के पास जाना है। उन्हें अपना पहचान पत्र (Voter ID) दिखाएं। वे मतदाता सूची में आपका नाम ढूंढेंगे और जोर से पुकारेंगे ताकि सभी को पता चले कि आप वोट देने आए हैं।</p>
+                <br>
+                <p><strong>English:</strong> First, approach the <strong>First Polling Officer</strong>. Show them your ID card. They will verify your name in the electoral roll and announce it loudly to confirm your presence.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="step-2" class="step-view">
+        <div class="info-card">
+            <div class="visual-icon">🖋️</div>
+            <h3 class="info-title">Officer 2: Ink & Register</h3>
+            <div class="info-body">
+                <p><strong>हिंदी:</strong> अब <strong>द्वितीय मतदान अधिकारी</strong> के पास जाएं। वे आपकी बाएं हाथ की तर्जनी उंगली पर <strong>अमिट स्याही</strong> लगाएंगे। इसके बाद आपको रजिस्टर (Form 17A) पर हस्ताक्षर करने होंगे और वे आपको एक छोटी पर्ची देंगे।</p>
+                <br>
+                <p><strong>English:</strong> Proceed to the <strong>Second Polling Officer</strong>. They will mark your left forefinger with <strong>Indelible Ink</strong>. You must sign the register (Form 17A), after which a voter slip will be issued to you.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="step-3" class="step-view">
+        <div class="info-card">
+            <div class="visual-icon">✅</div>
+            <h3 class="info-title">Officer 3: Final Check</h3>
+            <div class="info-body">
+                <p><strong>हिंदी:</strong> अंत में <strong>तृतीय मतदान अधिकारी</strong> के पास जाएं। उन्हें अपनी पर्ची दें और अपनी स्याही वाली उंगली दिखाएं। वे कंट्रोल यूनिट का बटन दबाकर वोटिंग मशीन को चालू करेंगे। जब आप <strong>'Ready'</strong> लाइट देखें, तब वोट डालने जाएं।</p>
+                <br>
+                <p><strong>English:</strong> Finally, approach the <strong>Third Polling Officer</strong>. Give them your slip and show your inked finger. They will activate the EVM for you. Only proceed to the booth once you see the <strong>'Ready'</strong> light.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="step-4" class="step-view" style="padding: 10px 0;">
+        <div class="bu-wrapper"><div class="bu-machine" id="bu-display"></div></div>
+    </div>
+
+    <div id="step-5" class="step-view">
+        <div class="info-card" style="text-align:center; justify-content:center;">
+            <div class="visual-icon">🗳️</div>
+            <h2 style="color:#2e7d32; margin-bottom:10px;">Voting Complete!</h2>
+            <p>आपने लोक सभा, विधान सभा और नगर निगम के लिए अपने तीनों वोट डाल दिए हैं।<br>You have successfully cast all three votes.</p>
+        </div>
+    </div>
+</div>
+
+<footer id="footer">
+    <button class="next-btn" onclick="next()">Next Step / आगे बढ़ें</button>
+</footer>
+
+<div id="vvpat-modal">
+    <div class="vvpat-case">
+        <div style="font-size:10px; font-weight:900; color:#444; margin-bottom:10px;">ECI VVPAT PRINTER</div>
+        <div class="vvpat-window">
+            <div id="slip-el" class="slip">
+                <div style="font-size:6px; border-bottom:1px solid #000; padding-bottom:5px; margin-bottom:8px;">VOTER VERIFIABLE PAPER AUDIT TRAIL</div>
+                <div id="v-sym" style="font-size:40px;"></div>
+                <div id="v-name" style="font-weight:900; margin:5px 0; font-size:13px;"></div>
+                <div id="v-tier" style="font-size:7px; color:#888;">LOK SABHA</div>
+            </div>
+        </div>
+        <div style="background:#f39c12; color:#fff; width:100%; text-align:center; padding:10px; margin-top:15px; border-radius:4px;">
+            <span style="font-weight:700;">अपनी परची की जांच करें (7 सेकंड)</span><br>
+            <span style="font-size:9px;">Verify your slip for 7 seconds</span>
+        </div>
+    </div>
+</div>
+
+<div id="transition-modal">
+    <div style="font-size:60px; margin-bottom:20px;">⏳</div>
+    <h2 style="margin-bottom:10px;">अगले वोट के लिए रुकें...</h2>
+    <p style="opacity:0.8;">Preparing the next ballot unit. Do not leave the booth.</p>
+</div>
+
+<script>
+    let step = 1;
+    let tier = 0;
+    let active = false;
+
+    const data = [
+        {
+            title: "LOK SABHA (Tier 1)", hi: "लोक सभा (संसदीय निर्वाचन)",
+            candidates: [
+                { n: "BANSURI SWARAJ", p: "BJP", s: "🪷" },
+                { n: "SOMNATH BHARTI", p: "AAP", s: "🧹" },
+                { n: "KULDIP KUMAR", p: "AAP", s: "🧹" },
+                { n: "RAAJ KUMAR ANAND", p: "BSP", s: "🐘" },
+                { n: "NOTA", p: "NONE", s: "❌" }
+            ]
+        },
+        {
+            title: "VIDHAN SABHA (Tier 2)", hi: "विधान सभा (राज्य निर्वाचन)",
+            candidates: [
+                { n: "ARVIND KEJRIWAL", p: "AAP", s: "🧹" },
+                { n: "VIJENDER GUPTA", p: "BJP", s: "🪷" },
+                { n: "DEVENDER YADAV", p: "INC", s: "✋" },
+                { n: "NOTA", p: "NONE", s: "❌" }
+            ]
+        },
+        {
+            title: "DISTRICT / MCD (Tier 3)", hi: "नगर निगम (वार्ड निर्वाचन)",
+            candidates: [
+                { n: "MCD CANDIDATE 1", p: "AAP", s: "🧹" },
+                { n: "MCD CANDIDATE 2", p: "BJP", s: "🪷" },
+                { n: "MCD CANDIDATE 3", p: "INC", s: "✋" },
+                { n: "NOTA", p: "NONE", s: "❌" }
+            ]
+        }
+    ];
+
+    function next() {
+        if(step < 4) {
+            document.getElementById(`step-${step}`).classList.remove('active');
+            step++;
+            document.getElementById(`step-${step}`).classList.add('active');
+            updateBar();
+            if(stage === 4) { document.getElementById('footer').style.display='none'; }
+        } else { location.reload(); }
+    }
+
+    function updateBar() {
+        const txts = [
+            { hi: "पहचान पत्र दिखाएं", en: "Identity Verification" },
+            { hi: "स्याही और रजिस्टर", en: "Ink and Register" },
+            { hi: "अंतिम जांच", en: "Final Verification" },
+            { hi: "नीला बटन दबाएं", en: "Press Blue Button" }
+        ];
+        const bar = document.getElementById('top-bar');
+        bar.querySelector('.hi').innerText = txts[step-1].hi;
+        bar.querySelector('.en').innerText = txts[step-1].en;
+        if(step === 4) { document.getElementById('footer').style.display='none'; render(); }
+    }
+
+    function render() {
+        active = true;
+        const info = data[tier];
+        const bu = document.getElementById('bu-display');
+        document.getElementById('top-bar').innerHTML = `<span class="hi">${info.hi}</span><span class="en">Vote for ${info.title}</span>`;
+        
+        bu.innerHTML = `<div style="background:#444; color:#fff; font-size:9px; text-align:center; padding:3px;">M3 BALLOT UNIT - DELHI 2026</div>`;
+        info.candidates.forEach((c, i) => {
+            const row = document.createElement('div');
+            row.className = 'bu-row';
+            row.innerHTML = `
+                <div class="cand-no">${i+1}</div>
+                <div class="cand-info"><span class="cand-name">${c.n}</span><span class="cand-party">${c.p}</span></div>
+                <div class="cand-sym">${c.s}</div>
+                <div class="bu-action"><div class="lamp" id="lamp-${i}"></div><button class="vote-btn" onclick="cast(${i})"></button></div>
+            `;
+            bu.appendChild(row);
+        });
+    }
+
+    function cast(idx) {
+        if(!active) return;
+        active = false;
+        const cand = data[tier].candidates[idx];
+        document.getElementById(`lamp-${idx}`).classList.add('lit');
+        beep();
+
+        const modal = document.getElementById('vvpat-modal');
+        const slip = document.getElementById('slip-el');
+        document.getElementById('v-sym').innerText = cand.s;
+        document.getElementById('v-name').innerText = cand.n;
+        document.getElementById('v-tier').innerText = data[tier].title;
+
+        modal.style.display = 'flex';
+        setTimeout(() => slip.classList.add('show'), 200);
+
+        setTimeout(() => {
+            slip.classList.add('cut');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                slip.className = 'slip';
+                move();
+            }, 1000);
+        }, 5000);
+    }
+
+    function move() {
+        tier++;
+        if(tier < 3) {
+            const trans = document.getElementById('transition-modal');
+            trans.style.display = 'flex';
+            setTimeout(() => {
+                trans.style.display = 'none';
+                render();
+            }, 3000);
+        } else {
+            document.getElementById('step-4').classList.remove('active');
+            step = 5;
+            document.getElementById('step-5').classList.add('active');
+            document.getElementById('footer').style.display = 'block';
+            document.getElementById('top-bar').innerHTML = `<span class="hi">मतदान संपन्न</span><span class="en">Voting Complete</span>`;
+        }
+    }
+
+    function beep() {
+        const audio = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audio.createOscillator();
+        osc.frequency.setValueAtTime(1000, audio.currentTime);
+        osc.connect(audio.destination);
+        osc.start();
+        setTimeout(() => osc.stop(), 800);
+    }
+</script>
+
+</body>
+</html>
